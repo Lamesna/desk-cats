@@ -12,7 +12,7 @@ Everything lives in the menu bar: the cat icon opens your cat list, bowls, laser
 
 ## Download
 
-1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.2-macOS.zip`.
+1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.3-macOS.zip`.
 2. Unzip it and drag `Kotiki.app` into your Applications folder.
 3. On first launch macOS warns that it cannot verify the developer, because the app has no Apple certificate. Open System Settings → Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
 
@@ -25,6 +25,7 @@ The app speaks English, Russian and Chinese (简体中文). It starts in your sy
 ## What the cats do
 
 - Walk along the floor, jump onto windows and climb up their sides. Up top they sleep, loaf, wash and sharpen their claws.
+- Travel between windows like climbing stairs: walk to the nearest edge, hop to the next window, and keep going until they reach the one they wanted.
 - Get down in different ways: some jump, some slide down the side of the window, claws digging in.
 - Hang from the bottom edge of a window or widget, paw over paw.
 - Climb the side edges of the screen and scratch them like a scratching post.

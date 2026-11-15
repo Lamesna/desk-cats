@@ -161,6 +161,7 @@ final class World {
     var iconFetchBusy = false
     let iconQueue = DispatchQueue(label: "deskcats.icons")
     var widgetPIDs: [Int32: Bool] = [:]
+    var deskIDs = Set<CGWindowID>()   // widgets and desktop icons (not app windows)
     var finderPIDs: [Int32: Bool] = [:]
     var windowRects: [CGWindowID: CGRect] = [:]   // every app window, for hanging under them
     var mouseAcc = CGVector.zero
@@ -242,6 +243,7 @@ final class World {
             }
         }
         let deskStart = rects.count
+        deskIDs = desktopShown ? Set(desk.map { $0.0 }) : []
         windowRects = Dictionary(rects + (desktopShown ? desk : []), uniquingKeysWith: { a, _ in a })
         if desktopShown {
             rects += desk
@@ -318,9 +320,23 @@ final class World {
         return best.map { .window($0.id) } ?? .ground
     }
 
-    func randomPlatform() -> Platform? {
-        let c = platformList.filter { p in p.segs.contains { $0.hi - $0.lo > 70 } }
-        return c.randomElement()
+    /// A platform worth visiting. Real windows come first; widgets and desktop icons are
+    /// only picked when the cat can actually get there.
+    func randomPlatform(for c: Cat? = nil) -> Platform? {
+        var all = platformList.filter { p in p.segs.contains { $0.hi - $0.lo > 70 } }
+        if let c, c.surface == .ground { all = all.filter { canReachFromGround($0, c) } }
+        let wins = all.filter { !deskIDs.contains($0.id) && $0.id < 0xF000_0000 }
+        if !wins.isEmpty && (wins.count == all.count || Double.random(in: 0...1) < 0.85) { return wins.randomElement() }
+        return all.randomElement()
+    }
+
+    /// Can a cat standing on the floor get onto this platform (hop up, or leap onto its side and climb)?
+    func canReachFromGround(_ p: Platform, _ c: Cat) -> Bool {
+        if p.y - groundY < 150 { return true }
+        let gap = p.rect.minY - groundY
+        if gap > 450 { return false }
+        let off = (gap > 20 ? 55 : 4) * c.scale
+        return p.segs.contains { $0.lo - off >= minX - 1 || $0.hi + off <= maxX + 1 }
     }
 
     // MARK: cats sync
@@ -846,14 +862,19 @@ final class World {
                 }
                 return false
             }
-            let useLeft = abs(c.pos.x - seg.lo) < abs(c.pos.x - seg.hi)
-            let edge = useLeft ? seg.lo : seg.hi
-            let side: CGFloat = useLeft ? -1 : 1
             // window hangs above the floor → run up and leap onto its side
             let gap = p.rect.minY - groundY
             let floating = gap > 20
             if floating && gap > 450 { c.goal = .none; return false }   // too high to leap from the floor
-            let base = edge + side * (floating ? 55 : 4) * c.scale
+            let off = (floating ? 55 : 4) * c.scale
+            let leftOK = seg.lo - off >= minX - 1, rightOK = seg.hi + off <= maxX + 1
+            guard leftOK || rightOK else { c.goal = .none; return false }  // no room to stand beside it
+            var useLeft = abs(c.pos.x - seg.lo) < abs(c.pos.x - seg.hi)
+            if useLeft && !leftOK { useLeft = false }
+            if !useLeft && !rightOK { useLeft = true }
+            let edge = useLeft ? seg.lo : seg.hi
+            let side: CGFloat = useLeft ? -1 : 1
+            let base = edge + side * off
             if abs(c.pos.x - base) > 5 {
                 startWalk(c, base, speed: speed)
             } else if floating {
@@ -872,13 +893,18 @@ final class World {
                 c.phase = 0
             }
         case (.window(let a), .window(let b)):
-            guard let pa = platforms[a], let pb = platforms[b] else { jumpDown(c, toward: tx); return false }
-            let land = pb.clampX(c.pos.x, inset: 16)
-            if abs(pb.y - pa.y) < 230 && abs(land - c.pos.x) < 280 {
-                startJump(c, to: CGPoint(x: land, y: pb.y), target: s)
-            } else {
-                jumpDown(c, toward: tx)
+            guard let pa = platforms[a], platforms[b] != nil else { jumpDown(c, toward: tx); return false }
+            // walk to the right edge, hop to the next window on the way (like climbing stairs)
+            if let q = nextHop(from: pa, to: b), let h = hop(from: pa, to: q) {
+                if abs(c.pos.x - h.fromX) > 6 {
+                    startWalk(c, h.fromX, speed: speed)
+                } else {
+                    let d = abs(h.toX - h.fromX), dy = q.y - pa.y
+                    startJump(c, to: CGPoint(x: h.toX, y: q.y), target: .window(q.id), height: 26 + min(50, d * 0.25) + max(0, dy * 0.6))
+                }
+                return false
             }
+            getDown(c, toward: tx)   // no way across: go down and climb up from the floor
         default: break
         }
         return false
@@ -941,7 +967,7 @@ final class World {
         if c.stats.energy < 0.25 {
             if joinSleeper(c, chance: 0.85) { return }
             if case .window = c.surface { startSleep(c); return }
-            if let p = randomPlatform(), Double.random(in: 0...1) < 0.75 {
+            if let p = randomPlatform(for: c), Double.random(in: 0...1) < 0.75 {
                 setGoal(.sleepUp(p.id), x: p.clampX(CGFloat.random(in: p.rect.minX...p.rect.maxX), inset: 30)); return
             }
             startSleep(c); return
@@ -956,7 +982,7 @@ final class World {
         if c.surface == .ground {
             if r < 0.32 {
                 startWalk(c, CGFloat.random(in: minX...maxX))
-            } else if r < 0.58, let p = randomPlatform() {
+            } else if r < 0.58, let p = randomPlatform(for: c) {
                 setGoal(.visit(p.id), x: p.clampX(CGFloat.random(in: p.rect.minX...p.rect.maxX), inset: 30))
             } else if r < 0.72 {
                 idle(c, .sit, 3...7)
@@ -980,9 +1006,8 @@ final class World {
                 idle(c, .scratch, 2.5...4)
             } else if r < 0.80 {
                 idle(c, Bool.random() ? .sit : .groom, 3...6)
-            } else if r < 0.91, let q = platformList.filter({ $0.id != id && abs($0.y - p.y) < 230 }).randomElement() {
-                navigate(c, to: .window(q.id), x: c.pos.x)
-                if c.state != .jump { idle(c, .sit, 2...3) }
+            } else if r < 0.91, let q = reachablePlatforms(from: p).randomElement() {
+                setGoal(.visit(q.id), x: q.clampX(CGFloat.random(in: q.rect.minX...q.rect.maxX), inset: 30))
             } else {
                 getDown(c, toward: c.pos.x + CGFloat.random(in: -100...100))
             }

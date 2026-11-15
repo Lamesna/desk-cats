@@ -390,4 +390,79 @@ extension World {
         c.until = now + Double.random(in: 3...5)
         return true
     }
+
+    // MARK: - Travelling between windows like stairs
+
+    struct Hop { let fromX: CGFloat; let toX: CGFloat }
+
+    /// Where a cat on `a` can jump to land on `b`, if it is close enough (up to a step, down to a drop).
+    func hop(from a: Platform, to b: Platform) -> Hop? {
+        let dy = b.y - a.y
+        var best: (Hop, CGFloat)?
+        for sa in a.segs {
+            let la = sa.lo + 14, ha = sa.hi - 14
+            guard ha >= la else { continue }
+            for sb in b.segs {
+                let lb = sb.lo + 14, hb = sb.hi - 14
+                guard hb >= lb else { continue }
+                let fromX: CGFloat, toX: CGFloat
+                if ha < lb { fromX = ha; toX = lb }
+                else if hb < la { fromX = la; toX = hb }
+                else { let x = (max(la, lb) + min(ha, hb)) / 2; fromX = x; toX = x }   // overlap: straight up or down
+                let d = abs(toX - fromX)
+                let ok = dy > 0 ? (dy <= 150 && d <= 220) : (-dy <= 520 && d <= 300)
+                if ok, best == nil || d < best!.1 { best = (Hop(fromX: fromX, toX: toX), d) }
+            }
+        }
+        return best?.0
+    }
+
+    func neighbors(_ a: Platform) -> [Platform] {
+        platformList.filter { $0.id != a.id && hop(from: a, to: $0) != nil }
+    }
+
+    /// First window to hop to on the way to `goal`, searching a few steps ahead.
+    func nextHop(from a: Platform, to goal: CGWindowID, depth: Int = 5) -> Platform? {
+        var visited: Set<CGWindowID> = [a.id]
+        var queue: [(node: Platform, first: Platform)] = []
+        for n in neighbors(a) {
+            if n.id == goal { return n }
+            visited.insert(n.id)
+            queue.append((n, n))
+        }
+        var d = 1
+        while !queue.isEmpty && d < depth {
+            var next: [(node: Platform, first: Platform)] = []
+            for (node, first) in queue {
+                for n in neighbors(node) where !visited.contains(n.id) {
+                    if n.id == goal { return first }
+                    visited.insert(n.id)
+                    next.append((n, first))
+                }
+            }
+            queue = next
+            d += 1
+        }
+        return nil
+    }
+
+    /// Every platform a cat on `a` can reach by hopping, within a few steps.
+    func reachablePlatforms(from a: Platform, depth: Int = 5) -> [Platform] {
+        var visited: Set<CGWindowID> = [a.id]
+        var frontier = [a]
+        var out: [Platform] = []
+        for _ in 0..<depth {
+            var next: [Platform] = []
+            for node in frontier {
+                for n in neighbors(node) where !visited.contains(n.id) {
+                    visited.insert(n.id)
+                    out.append(n)
+                    next.append(n)
+                }
+            }
+            frontier = next
+            if frontier.isEmpty { break }
+        }
+        return out.filter { $0.segs.contains { $0.hi - $0.lo > 70 } }
+    }
 }
