@@ -215,8 +215,8 @@ extension World {
         // only real window sides (not a cut made by another window in front), fully on screen
         let seg = p.nearestSeg(c.pos.x)
         var sides: [CGFloat] = []
-        if abs(seg.lo - max(p.rect.minX + 4, minX)) < 1 && p.rect.minX > visible.minX + 40 { sides.append(-1) }
-        if abs(seg.hi - min(p.rect.maxX - 4, maxX)) < 1 && p.rect.maxX < visible.maxX - 40 { sides.append(1) }
+        if abs(seg.lo - max(p.rect.minX + 4, minX)) < 1 && p.rect.minX > visible.minX + 40 && sideVisible(id, left: true) { sides.append(-1) }
+        if abs(seg.hi - min(p.rect.maxX - 4, maxX)) < 1 && p.rect.maxX < visible.maxX - 40 && sideVisible(id, left: false) { sides.append(1) }
         guard !sides.isEmpty else { jumpDown(c, toward: x); return }
         c.slideSide = sides.min { abs(($0 < 0 ? seg.lo : seg.hi) - c.pos.x) < abs(($1 < 0 ? seg.lo : seg.hi) - c.pos.x) }!
         c.goal = .slide(id)
@@ -252,6 +252,7 @@ extension World {
         let f = CGFloat(dt)
         let s = c.scale
         guard let p = platforms[c.climbWin] else { startFall(c); return }   // window vanished under the claws
+        if !sideVisible(c.climbWin, left: c.climbSide < 0) { loseSupport(c); return }   // covered by another window
         c.pos.x = c.climbSide < 0 ? p.rect.minX : p.rect.maxX
         if now < c.slideGripUntil {
             c.slideV = max(0, c.slideV - 1400 * f)          // claws caught: brake hard
@@ -289,22 +290,55 @@ extension World {
 
     // MARK: - Hanging from the bottom edge of a window, paw over paw
 
+    /// Stretches of a window's bottom edge that no other window covers.
+    func visibleBottomSegs(_ id: CGWindowID) -> [(lo: CGFloat, hi: CGFloat)] {
+        guard let i = zRects.firstIndex(where: { $0.0 == id }) else { return [] }
+        let r = zRects[i].1
+        var segs: [(lo: CGFloat, hi: CGFloat)] = [(max(r.minX + 10, minX), min(r.maxX - 10, maxX))]
+        for j in 0..<i {
+            let o = zRects[j].1
+            if o.minY < r.minY + 6 && o.maxY > r.minY - 6 { segs = subtract(segs, o.minX - 8, o.maxX + 8) }
+        }
+        return segs.filter { $0.hi - $0.lo > 60 }
+    }
+
+    /// Is the left or right side of this window in plain view, not hidden behind another window?
+    func sideVisible(_ id: CGWindowID, left: Bool) -> Bool {
+        guard let i = zRects.firstIndex(where: { $0.0 == id }) else { return true }   // desktop icons
+        let r = zRects[i].1
+        let x = left ? r.minX : r.maxX
+        let lo = max(r.minY, groundY) + 8, hi = r.maxY - 8
+        for j in 0..<i {
+            let o = zRects[j].1
+            if o.minX - 3 <= x && o.maxX + 3 >= x && o.minY < hi && o.maxY > lo { return false }
+        }
+        return true
+    }
+
     func tryUnder(_ c: Cat) -> Bool {
         let s = c.scale
-        let options = windowRects.filter { _, r in
+        var best: (id: CGWindowID, seg: (lo: CGFloat, hi: CGFloat), dist: CGFloat)?
+        for (id, r) in zRects {
             let gap = r.minY - groundY
-            return gap > 75 * s && gap < 300 && r.width > 140 && r.maxX > minX + 60 && r.minX < maxX - 60
+            guard gap > 75 * s, gap < 300, r.width > 140 else { continue }
+            for seg in visibleBottomSegs(id) {
+                let d = c.pos.x < seg.lo ? seg.lo - c.pos.x : (c.pos.x > seg.hi ? c.pos.x - seg.hi : 0)
+                if best == nil || d < best!.dist { best = (id, seg, d) }
+            }
         }
-        guard let (id, r) = options.min(by: { abs($0.value.midX - c.pos.x) < abs($1.value.midX - c.pos.x) }) else { return false }
-        c.goal = .under(id)
-        c.goalX = min(max(c.pos.x, max(r.minX, minX) + 30 * s), min(r.maxX, maxX) - 30 * s)
+        guard let b = best else { return false }
+        c.goal = .under(b.id)
+        c.goalX = min(max(c.pos.x, b.seg.lo + 20 * s), b.seg.hi - 20 * s)
         c.goalDeadline = now + 30
-        return pursueUnder(c, id)
+        return pursueUnder(c, b.id)
     }
 
     func pursueUnder(_ c: Cat, _ id: CGWindowID) -> Bool {
-        guard let r = windowRects[id], c.surface == .ground, r.minY - groundY > 70 * c.scale else { c.goal = .none; return false }
+        guard let r = windowRects[id], c.surface == .ground, r.minY - groundY > 70 * c.scale,
+              !visibleBottomSegs(id).isEmpty else { c.goal = .none; return false }
         if !navigate(c, to: .ground, x: c.goalX) { return true }
+        // only grab the part of the edge that is in plain view
+        guard visibleBottomSegs(id).contains(where: { c.pos.x >= $0.lo && c.pos.x <= $0.hi }) else { c.goal = .none; return false }
         // right under the edge: leap up and grab it
         c.goal = .none
         c.underWin = id
@@ -325,7 +359,14 @@ extension World {
 
     private func pickUnderTarget(_ c: Cat, _ r: CGRect) {
         let s = c.scale
-        let lo = max(r.minX, minX) + 16 * s - r.minX, hi = min(r.maxX, maxX) - 16 * s - r.minX
+        // stay on the uncovered stretch of the edge the cat is hanging from
+        let segs = visibleBottomSegs(c.underWin)
+        guard let cur = segs.min(by: { a, b in
+            let da = c.pos.x < a.lo ? a.lo - c.pos.x : (c.pos.x > a.hi ? c.pos.x - a.hi : 0)
+            let db = c.pos.x < b.lo ? b.lo - c.pos.x : (c.pos.x > b.hi ? c.pos.x - b.hi : 0)
+            return da < db
+        }) else { c.underTarget = c.underOffset; return }
+        let lo = cur.lo + 16 * s - r.minX, hi = cur.hi - 16 * s - r.minX
         guard hi > lo else { c.underTarget = c.underOffset; return }
         var t = CGFloat.random(in: lo...hi)
         if abs(t - c.underOffset) < 80 { t = c.underOffset < (lo + hi) / 2 ? hi : lo }
@@ -336,6 +377,11 @@ extension World {
         let s = c.scale
         guard let r = windowRects[c.underWin] else { startFall(c); return }   // window closed: down it goes
         if r.minY - groundY < 50 * s { startFall(c, gentle: true); return }
+        // another window now covers this part of the edge: let go
+        if !visibleBottomSegs(c.underWin).contains(where: { c.pos.x >= $0.lo - 14 && c.pos.x <= $0.hi + 14 }) {
+            loseSupport(c)
+            return
+        }
         let dx = c.underTarget - c.underOffset
         let step = 40 * s * CGFloat(dt)
         if abs(dx) <= step {
@@ -344,11 +390,11 @@ extension World {
             let nearEnd = right ? c.underOffset > r.width - 40 * s : c.underOffset < 40 * s
             if nearEnd, let (nid, nr) = windowRects.first(where: { id, r2 in
                 id != c.underWin && abs(r2.minY - r.minY) < 8 &&
-                (right ? abs(r2.minX - r.maxX) < 14 : abs(r2.maxX - r.minX) < 14)
-            }) {
+                (right ? abs(r2.minX - r.maxX) < 14 : abs(r2.maxX - r.minX) < 14) && !visibleBottomSegs(id).isEmpty
+            }), let seg = visibleBottomSegs(nid).min(by: { abs(($0.lo + $0.hi) / 2 - c.pos.x) < abs(($1.lo + $1.hi) / 2 - c.pos.x) }) {
                 c.underWin = nid
                 c.underOffset = c.pos.x - nr.minX
-                let lo = max(nr.minX, minX) + 16 * s - nr.minX, hi = min(nr.maxX, maxX) - 16 * s - nr.minX
+                let lo = seg.lo + 16 * s - nr.minX, hi = seg.hi - 16 * s - nr.minX
                 c.underTarget = right ? max(lo, hi) : min(lo, hi)
                 return
             }
@@ -464,5 +510,46 @@ extension World {
             if frontier.isEmpty { break }
         }
         return out.filter { $0.segs.contains { $0.hi - $0.lo > 70 } }
+    }
+
+    // MARK: - Losing the footing: fall, or catch the window in front
+
+    /// The ground went from under the cat (another window slid over it, or the window moved).
+    /// Sometimes it falls; sometimes it grabs the edge of the window in front and scrambles up it.
+    func loseSupport(_ c: Cat) {
+        if now > c.grabReadyAt, Double.random(in: 0...1) < 0.55, grabFrontWindow(c) { return }
+        startFall(c)
+    }
+
+    /// Jump sideways onto the nearest uncovered side of a window that now surrounds the cat,
+    /// cling to it in the middle of the window and climb to its top.
+    func grabFrontWindow(_ c: Cat) -> Bool {
+        let s = c.scale
+        let body = CGPoint(x: c.pos.x, y: c.pos.y + 20 * s)
+        var best: (p: Platform, left: Bool, dist: CGFloat)?
+        for (id, r) in zRects {
+            guard let p = platforms[id], r.insetBy(dx: -60, dy: -40).contains(body), p.y - body.y > 30 else { continue }
+            for left in [true, false] {
+                guard sideVisible(id, left: left) else { continue }
+                let edge = left ? r.minX : r.maxX
+                guard edge > minX - 1, edge < maxX + 1 else { continue }
+                let d = abs(body.x - edge)
+                if best == nil || d < best!.dist { best = (p, left, d) }
+            }
+        }
+        guard let b = best else { return false }
+        let side: CGFloat = b.left ? -1 : 1
+        let seg = b.p.nearestSeg(c.pos.x)
+        let edge = b.left ? seg.lo : seg.hi
+        let grabY = min(max(c.pos.y, b.p.rect.minY + 24 * s), b.p.y - 70 * s)
+        c.goal = .none
+        c.grabReadyAt = now + 4
+        c.climbWin = b.p.id
+        c.climbSide = side
+        startJump(c, to: CGPoint(x: edge, y: grabY), target: .ground, height: 14)
+        c.jDur = Double(0.28 + b.dist / 1100)
+        c.jumpToClimb = true
+        c.say("Meow!", 1, now: now)
+        return true
     }
 }

@@ -90,6 +90,7 @@ final class Cat {
     var slideV: CGFloat = 0
     var slideGripUntil = 0.0
     var jumpToUnder = false
+    var grabReadyAt = 0.0
     var underWin: CGWindowID = 0
     var underOffset: CGFloat = 0
     var underTarget: CGFloat = 0
@@ -161,6 +162,7 @@ final class World {
     var iconFetchBusy = false
     let iconQueue = DispatchQueue(label: "deskcats.icons")
     var widgetPIDs: [Int32: Bool] = [:]
+    var zRects: [(CGWindowID, CGRect)] = []   // windows front to back, then widgets: who covers whom
     var deskIDs = Set<CGWindowID>()   // widgets and desktop icons (not app windows)
     var finderPIDs: [Int32: Bool] = [:]
     var windowRects: [CGWindowID: CGRect] = [:]   // every app window, for hanging under them
@@ -245,6 +247,7 @@ final class World {
         let deskStart = rects.count
         deskIDs = desktopShown ? Set(desk.map { $0.0 }) : []
         windowRects = Dictionary(rects + (desktopShown ? desk : []), uniquingKeysWith: { a, _ in a })
+        zRects = rects + (desktopShown ? desk : [])
         if desktopShown {
             rects += desk
             for (i, r) in iconRects.enumerated() { rects.append((0xF000_0000 + CGWindowID(i), r)) }
@@ -279,7 +282,7 @@ final class World {
         platformList = result
     }
 
-    private func subtract(_ segs: [(lo: CGFloat, hi: CGFloat)], _ a: CGFloat, _ b: CGFloat) -> [(lo: CGFloat, hi: CGFloat)] {
+    func subtract(_ segs: [(lo: CGFloat, hi: CGFloat)], _ a: CGFloat, _ b: CGFloat) -> [(lo: CGFloat, hi: CGFloat)] {
         var out: [(lo: CGFloat, hi: CGFloat)] = []
         for s in segs {
             if b <= s.lo || a >= s.hi { out.append(s); continue }
@@ -336,7 +339,9 @@ final class World {
         let gap = p.rect.minY - groundY
         if gap > 450 { return false }
         let off = (gap > 20 ? 55 : 4) * c.scale
-        return p.segs.contains { $0.lo - off >= minX - 1 || $0.hi + off <= maxX + 1 }
+        return p.segs.contains {
+            ($0.lo - off >= minX - 1 && sideVisible(p.id, left: true)) || ($0.hi + off <= maxX + 1 && sideVisible(p.id, left: false))
+        }
     }
 
     // MARK: cats sync
@@ -583,7 +588,7 @@ final class World {
                 c.pos.y = groundY
                 if c.state != .wallScratch { c.pos.x = min(max(c.pos.x, minX), maxX) }
             case .window(let id):
-                if let p = platforms[id], p.contains(c.pos.x, tol: 6) { c.pos.y = p.y } else { startFall(c) }
+                if let p = platforms[id], p.contains(c.pos.x, tol: 6) { c.pos.y = p.y } else { loseSupport(c) }
             }
         }
 
@@ -613,6 +618,7 @@ final class World {
 
         case .climb:
             guard let p = platforms[c.climbWin] else { startFall(c); break }
+            if !sideVisible(c.climbWin, left: c.climbSide < 0) { loseSupport(c); break }
             let seg = p.nearestSeg(c.pos.x)
             c.pos.x = c.climbSide < 0 ? seg.lo : seg.hi
             // scramble in bursts: hind legs push → fast surge, front paws grab → short pause
@@ -867,7 +873,8 @@ final class World {
             let floating = gap > 20
             if floating && gap > 450 { c.goal = .none; return false }   // too high to leap from the floor
             let off = (floating ? 55 : 4) * c.scale
-            let leftOK = seg.lo - off >= minX - 1, rightOK = seg.hi + off <= maxX + 1
+            let leftOK = seg.lo - off >= minX - 1 && sideVisible(id, left: true)
+            let rightOK = seg.hi + off <= maxX + 1 && sideVisible(id, left: false)
             guard leftOK || rightOK else { c.goal = .none; return false }  // no room to stand beside it
             var useLeft = abs(c.pos.x - seg.lo) < abs(c.pos.x - seg.hi)
             if useLeft && !leftOK { useLeft = false }

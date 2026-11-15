@@ -188,10 +188,22 @@ extension CatRenderer {
         let r = g.torsoRect
         let horizontal = r.width >= r.height
         let (a0, a1): (CGFloat, CGFloat) = horizontal ? (150, 35) : (205, 105)
+        let centre = P(r.midX, r.midY)
         return (0..<count).map { i in
             let a = (a0 + (a1 - a0) * CGFloat(i) / CGFloat(max(1, count - 1))) * .pi / 180
-            let p = P(r.midX + cos(a) * r.width / 2, r.midY + sin(a) * r.height / 2)
-            return (p, P(cos(a), sin(a)))
+            let dir = P(Darwin.cos(a), Darwin.sin(a))
+            // walk out from the middle of the body to the real edge of the silhouette (a seated cat is
+            // narrow at the neck, so a plain ellipse would leave the spikes floating in the air)
+            guard let shape = g.torsoShape, shape.contains(centre) else {
+                return (P(centre.x + dir.x * r.width / 2, centre.y + dir.y * r.height / 2), dir)
+            }
+            func inside(_ d: CGFloat) -> Bool { shape.contains(P(centre.x + dir.x * d, centre.y + dir.y * d)) }
+            var lo: CGFloat = 0, hi: CGFloat = 1
+            let limit = max(r.width, r.height) + 12
+            while hi < limit && inside(hi) { lo = hi; hi += 1 }
+            for _ in 0..<8 { let m = (lo + hi) / 2; if inside(m) { lo = m } else { hi = m } }
+            let d = max(0, lo - 1.4)                    // the base sits just inside the body: no gap
+            return (P(centre.x + dir.x * d, centre.y + dir.y * d), dir)
         }
     }
 

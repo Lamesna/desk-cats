@@ -65,6 +65,7 @@ struct Geo {
     var headR: CGFloat = 11.5
     var torsoRect = CGRect.zero
     var torsoC = CGPoint.zero
+    var torsoShape: CGPath?      // the real silhouette of the body, for things that must sit on it
     var belly: CGRect?
     var chest: CGRect?
     var tail: [CGPoint] = []
@@ -154,12 +155,15 @@ enum CatRenderer {
             g.parts.append(Part(kind: .leg, path: stroked([a, b, c], w)))
         }
         func torso(_ c: CGPoint, _ rx: CGFloat, _ ry: CGFloat, _ rot: CGFloat = 0) {
-            g.parts.append(Part(kind: .torso, path: ellipse(c, rx, ry, rot: rot)))
+            let shape = ellipse(c, rx, ry, rot: rot)
+            g.parts.append(Part(kind: .torso, path: shape))
+            g.torsoShape = shape
             g.torsoRect = ovalRect(c.x, c.y, rx, ry)
             g.torsoC = c
         }
         func torsoPath(_ p: CGPath) {
             g.parts.append(Part(kind: .torso, path: p))
+            g.torsoShape = p
             g.torsoRect = p.boundingBoxOfPath
             g.torsoC = P(g.torsoRect.midX, g.torsoRect.midY)
         }
@@ -380,6 +384,7 @@ enum CatRenderer {
             sp.addLine(to: c)
             sp.closeSubpath()
             g.parts.append(Part(kind: .torso, path: sp))
+            g.torsoShape = sp
             leg(P(8, 20), P(9, 2.4))
             leg(P(12, 20), P(14, 2.4))
             g.belly = ovalRect(1, 15, 12, 5)
