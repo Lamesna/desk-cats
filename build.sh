@@ -5,9 +5,14 @@ cd "$(dirname "$0")"
 APP="build/Котики.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-swiftc -O -swift-version 5 -target arm64-apple-macos13.0 \
-  -o "$APP/Contents/MacOS/DeskCats" Sources/*.swift \
-  -framework AppKit -framework SwiftUI
+# универсальная сборка: Apple Silicon + Intel
+for ARCH in arm64 x86_64; do
+  swiftc -O -swift-version 5 -target $ARCH-apple-macos13.0 \
+    -o "build/DeskCats-$ARCH" Sources/*.swift \
+    -framework AppKit -framework SwiftUI
+done
+lipo -create build/DeskCats-arm64 build/DeskCats-x86_64 -output "$APP/Contents/MacOS/DeskCats"
+rm -f build/DeskCats-arm64 build/DeskCats-x86_64
 cat > "$APP/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
