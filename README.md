@@ -1,26 +1,41 @@
 # Kotiki
 
-Desktop cats for macOS. They roam the bottom of your screen, climb onto your windows, nap on widgets, sharpen their claws on the screen edge and chase your cursor. Close the window a cat is dozing on and it tumbles to the floor with an offended face.
+Desktop cats for your screen. They roam the bottom of the display, climb onto your windows, sharpen their claws on the screen edge and chase your cursor. Close the window a cat is dozing on and it tumbles to the floor with an offended face.
 
 Clicks pass straight through the cats, so you keep working as usual. You can feed them, pet them with the cursor and dress them up as a shark or a banana.
-
-Everything lives in the menu bar: the cat icon opens your cat list, bowls, laser pointer and outfits.
 
 ![18 coat colors](docs/cats.png)
 
 ![Cats in hats and costumes](docs/costumes.png)
 
-## Download
+## Pick your version
 
-1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.4-macOS.zip`.
-2. Unzip it and drag `Kotiki.app` into your Applications folder.
-3. On first launch macOS warns that it cannot verify the developer, because the app has no Apple certificate. Open System Settings → Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
+| Platform | Folder | Status | Download |
+|---|---|---|---|
+| **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 1.4 | [Latest release](https://github.com/MiLana-ec/desk-cats/releases/latest), file `Kotiki-1.4-macOS.zip` |
+| **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.1.0 | [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.1.0), file `Kotiki-0.1.0-Windows-x64.zip` |
 
-Requires macOS 13 or newer. Runs on Apple Silicon and Intel Macs.
+The macOS app is native Swift. The Windows app is a separate port built with Electron. Both draw the same cats and share the same look, costumes and behavior, but the code is independent.
+
+### macOS
+
+1. Download `Kotiki-1.4-macOS.zip` from the latest release, unzip it and drag `Kotiki.app` into Applications.
+2. On first launch macOS says it cannot verify the developer, because the app has no Apple certificate. Open System Settings, Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
+3. The cat icon in the menu bar opens your cat list, bowls, laser pointer and outfits. Hold Option and drag to pick up a cat.
+
+Details and build instructions: [`macos/README.md`](macos/README.md).
+
+### Windows (beta)
+
+1. Download `Kotiki-0.1.0-Windows-x64.zip` from the Windows release and unzip it anywhere.
+2. Double-click `Kotiki.exe`. If Windows shows "Windows protected your PC", click "More info", then "Run anyway" (the app is not signed).
+3. The cat icon sits in the notification area at the right of the taskbar (click the ^ arrow if it is hidden). Hold Ctrl and drag to pick up a cat.
+
+This is a first release and it has not been tested on many machines. Cats walk on open windows and the taskbar, but not on desktop icons or widgets. Details and build instructions: [`windows/README.md`](windows/README.md).
 
 ## Languages
 
-The app speaks English, Russian and Chinese (简体中文). It starts in your system language and you can switch it any time with the globe menu at the bottom of the Kotiki menu. The menu, coat and outfit names, cat moods, default cat names and the cats' speech bubbles all follow the chosen language.
+The app speaks English, Russian and Chinese (简体中文). It starts in your system language and you can switch it any time with the globe menu at the bottom of the Kotiki menu. The menu, coat and outfit names, cat moods and default cat names all follow the chosen language.
 
 ## What the cats do
 
@@ -41,7 +56,7 @@ The app speaks English, Russian and Chinese (简体中文). It starts in your sy
 - Put food and water bowls anywhere on the screen. A hungry cat finds its bowl on its own.
 - Every cat has food, water, energy and mood bars.
 - The laser pointer turns your cursor into a red dot. Cats leap after it, and the three most agile ones hang on the cursor and swing as you move the mouse.
-- Hold ⌥ Option and drag to pick up a cat or a bowl. A thrown cat flies in an arc.
+- Hold ⌥ Option (macOS) or Ctrl (Windows) and drag to pick up a cat or a bowl. A thrown cat flies in an arc.
 
 ## Looks
 
@@ -51,46 +66,13 @@ The app speaks English, Russian and Chinese (简体中文). It starts in your sy
 
 Superhero-style items are "inspired by" designs: no logos, letters or character names.
 
-## Build from source
+## Repository layout
 
-You need macOS 13 or newer and the Xcode command line tools. If you do not have them, install with:
-
-```bash
-xcode-select --install
-```
-
-Build and run:
-
-```bash
-./build.sh
-open "build/Kotiki.app"
-```
-
-`build.sh` produces a universal app for Apple Silicon and Intel. It is signed locally, without an Apple certificate. If macOS refuses to open it, right-click the app and choose Open.
-
-## Permissions
-
-- The app sees windows, widgets and the cursor without extra permissions.
-- To let cats walk on your desktop icons, the app asks Finder where they are. macOS shows a one-time prompt: "Kotiki wants to control Finder". If you decline, the icons just stop being platforms.
-
-## How to turn it off
-
-The switch in the menu hides every cat. The Quit button closes the app and the cats disappear. Your cat list and outfits are saved until the next launch.
-
-## How it is built
-
-The app is written in Swift (AppKit and SwiftUI) with no third-party libraries. The cats are drawn in code, and the project has no image assets.
-
-| File | What is inside |
+| Folder | What is inside |
 |---|---|
-| `Sources/CatRenderer.swift` | Cat drawing, poses, eyes, masks |
-| `Sources/Costumes.swift` | Hood hats and costumes |
-| `Sources/World.swift` | Windows as platforms, physics, cat behavior |
-| `Sources/Hunt.swift` | Stalking, screen edges, sliding down, widgets and icons |
-| `Sources/Play.swift` | Cat play, hanging from the cursor |
-| `Sources/Overlay.swift` | Transparent window over the screen |
-| `Sources/MenuUI.swift` | Menu bar interface |
-| `Sources/Model.swift` | Coats, cat settings, saving |
+| `macos/` | The macOS app (Swift, AppKit, SwiftUI) and `build.sh` |
+| `windows/` | The Windows app (Electron, JavaScript) and its packaging script |
+| `docs/` | Pictures for this README |
 
 ## License
 

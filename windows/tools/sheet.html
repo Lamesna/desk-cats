@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#bdbdbd}canvas{display:block}</style></head>
+<body><canvas id="c"></canvas>
+<script src="../src/loc.js"></script>
+<script src="../src/model.js"></script>
+<script src="../src/render-core.js"></script>
+<script src="../src/costumes.js"></script>
+<script src="../src/render-draw.js"></script>
+<script src="../src/hoods.js"></script>
+<script>
+const mode = new URLSearchParams(location.search).get('mode');
+const cv = document.getElementById('c');
+const items = [];
+let cols = 9, cw = 110, ch = 100, scale = 1.35;
+if (mode === 'coats') {
+  const poses = ['sit', 'walk', 'run', 'loaf', 'sleep', 'jump', 'hiss', 'climb', 'stalk'];
+  K.coatPresets.forEach((p) => poses.forEach((pose) => items.push({ coat: p.id, pose })));
+} else if (mode === 'costumes') {
+  const poses = ['sit', 'stand', 'walk', 'run', 'loaf', 'sleep', 'scratch', 'climb', 'stalk'];
+  K.outfitOptions.filter((o) => o.id !== 'none').forEach((o) => poses.forEach((pose) => items.push({ coat: 'grayWhite', outfit: o.id, pose })));
+} else if (mode === 'hats') {
+  cols = 8; cw = 130; ch = 120; scale = 1.7;
+  const coats = ['black', 'grayWhite', 'ginger', 'white', 'tuxedo', 'calico', 'siamese', 'blue'];
+  K.hatOptions.filter((o) => o.id !== 'none').forEach((o, i) => items.push({ coat: coats[i % coats.length], hat: o.id, pose: 'sit' }));
+}
+const rows = Math.ceil(items.length / cols);
+const dpr = 1;
+cv.width = cols * cw * dpr; cv.height = rows * ch * dpr;
+cv.style.width = cv.width + 'px'; cv.style.height = cv.height + 'px';
+const ctx = cv.getContext('2d');
+ctx.fillStyle = '#bdbdbd'; ctx.fillRect(0, 0, cv.width, cv.height);
+const gc = new K.G(ctx);
+items.forEach((it, i) => {
+  const cfg = K.newCat('x', it.coat, K.preset(it.coat).eyes, 1);
+  cfg.seed = 777; cfg.hat = it.hat || 'none'; cfg.outfit = it.outfit || 'none';
+  const look = K.makeLook(cfg);
+  const ri = { pose: it.pose, facing: 1, phase: 1.1, t: 0.9, eyes: it.pose === 'sleep' ? 'closed' : (it.pose === 'hiss' ? 'angry' : 'open'),
+    look: { x: 0, y: 0 }, mouthOpen: it.pose === 'hiss', climbSide: -1, rotation: 0, shake: 0, blush: false, swing: 0, progress: 0.5 };
+  const x = (i % cols) * cw + cw / 2 + (it.pose === 'climb' ? 14 : 0), y = (Math.floor(i / cols) + 1) * ch - 14;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, -scale);         // y points up, like the Swift renderer
+  K.draw(gc, look, ri);
+  ctx.restore();
+});
+</script></body></html>

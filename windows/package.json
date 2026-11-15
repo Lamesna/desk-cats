@@ -1,0 +1,21 @@
+{
+  "name": "kotiki",
+  "productName": "Kotiki",
+  "version": "0.1.0",
+  "description": "Desktop cats for Windows: they climb your windows, chase the cursor and wear costumes.",
+  "main": "main.js",
+  "license": "MIT",
+  "author": "MiLana-ec",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/sim.js",
+    "pack:win": "bash tools/pack-win.sh",
+    "icons": "electron tools/make-icons.js"
+  },
+  "dependencies": {
+    "koffi": "^2.9.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}
