@@ -121,7 +121,7 @@ final class Cat {
     }
 
     func say(_ text: String, _ secs: Double, now: Double, alert: Bool = false) {
-        bubble = text
+        bubble = tr(text)
         bubbleUntil = now + secs
         bubbleAlert = alert
     }

@@ -58,11 +58,11 @@ enum EyeColor: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
     var name: String {
         switch self {
-        case .green: return "Green"
-        case .yellow: return "Yellow"
-        case .amber: return "Amber"
-        case .blue: return "Blue"
-        case .copper: return "Copper"
+        case .green: return "Green eyes"
+        case .yellow: return "Yellow eyes"
+        case .amber: return "Amber eyes"
+        case .blue: return "Blue eyes"
+        case .copper: return "Copper eyes"
         case .odd: return "Odd eyes"
         }
     }
@@ -92,9 +92,6 @@ struct CatConfig: Codable, Identifiable, Equatable {
     var outfit: String? = nil
 }
 
-let catNames = ["Whiskers", "Misty", "Fluffy", "Ginger", "Smokey", "Simba", "Luna", "Hush", "Muffin", "Mochi",
-                "Bun", "Fenya", "Sleepy", "Bagel", "Peach", "Ember", "Snowball", "Marquis", "Nightie", "Pumpkin"]
-
 struct CatStats: Equatable {
     var food: Double = 0.8
     var water: Double = 0.8
@@ -116,6 +113,9 @@ final class AppState: ObservableObject {
     @Published var placing: BowlKind? = nil
     @Published var stats: [UUID: CatStats] = [:]
     @Published var bowlCount = 0
+    @Published var lang: Lang = Loc.current {
+        didSet { if lang != oldValue { Loc.set(lang) } }
+    }
 
     var onCatsChanged: (() -> Void)?
     var onRunningChanged: (() -> Void)?
@@ -128,7 +128,7 @@ final class AppState: ObservableObject {
            let saved = try? JSONDecoder().decode([CatConfig].self, from: data), !saved.isEmpty {
             cats = saved
         } else {
-            cats = [CatConfig(name: "Whiskers", coat: "grayWhite", eyes: .green)]
+            cats = [CatConfig(name: catNamesByLang[Loc.current]![0], coat: "grayWhite", eyes: .green)]
         }
     }
 
@@ -139,7 +139,7 @@ final class AppState: ObservableObject {
     func randomCat() -> CatConfig {
         let p = coatPresets.randomElement()!
         let used = Set(cats.map(\.name))
-        let name = catNames.first { !used.contains($0) } ?? "Cat \(cats.count + 1)"
+        let name = (catNamesByLang[Loc.current] ?? []).first { !used.contains($0) } ?? "\(tr("Cat")) \(cats.count + 1)"
         return CatConfig(name: name, coat: p.id, eyes: p.eyes, size: Double.random(in: 1.0...1.35))
     }
 }

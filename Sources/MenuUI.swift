@@ -64,7 +64,7 @@ struct MenuView: View {
                 Spacer()
                 Toggle("", isOn: $state.running).toggleStyle(.switch).labelsHidden()
             }
-            Text(state.running ? "Cats are roaming your screen" : "All cats are hidden. Switch on to bring them back.")
+            Text(state.running ? tr("Cats are roaming your screen") : tr("All cats are hidden. Switch on to bring them back."))
                 .font(.caption).foregroundStyle(.secondary)
 
             if state.running {
@@ -79,7 +79,7 @@ struct MenuView: View {
                     state.cats.append(c)
                     editing = c.id
                 } label: {
-                    Label("Add a cat", systemImage: "plus.circle.fill").frame(maxWidth: .infinity)
+                    Label(tr("Add a cat"), systemImage: "plus.circle.fill").frame(maxWidth: .infinity)
                 }
                 .controlSize(.large)
                 .buttonStyle(.borderedProminent)
@@ -88,35 +88,45 @@ struct MenuView: View {
                 Divider()
 
                 Toggle(isOn: $state.laser) {
-                    Label("Laser pointer instead of cursor", systemImage: "light.max")
+                    Label(tr("Laser pointer instead of cursor"), systemImage: "light.max")
                 }
                 .toggleStyle(.switch)
 
-                Text("Care").font(.headline)
+                Text(tr("Care")).font(.headline)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                    careButton("Food bowl", "fork.knife") { state.placing = .food; close() }
-                    careButton("Water bowl", "drop.fill") { state.placing = .water; close() }
-                    careButton("Refill food", "arrow.clockwise") { state.onBowlAction?("refillFood") }
-                    careButton("Refill water", "arrow.clockwise") { state.onBowlAction?("refillWater") }
-                    careButton("Feed everyone", "heart.fill") { state.onBowlAction?("feedAll") }
-                    careButton("Remove bowls", "trash") { state.onBowlAction?("clear") }
+                    careButton(tr("Food bowl"), "fork.knife") { state.placing = .food; close() }
+                    careButton(tr("Water bowl"), "drop.fill") { state.placing = .water; close() }
+                    careButton(tr("Refill food"), "arrow.clockwise") { state.onBowlAction?("refillFood") }
+                    careButton(tr("Refill water"), "arrow.clockwise") { state.onBowlAction?("refillWater") }
+                    careButton(tr("Feed everyone"), "heart.fill") { state.onBowlAction?("feedAll") }
+                    careButton(tr("Remove bowls"), "trash") { state.onBowlAction?("clear") }
                 }
                 if state.placing != nil {
-                    Text("Click anywhere on the screen to place the bowl. Right-click to cancel.")
+                    Text(tr("Click anywhere on the screen to place the bowl. Right-click to cancel."))
                         .font(.caption).foregroundStyle(.orange)
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("• Hold the cursor over a cat and it purrs")
-                    Text("• ⌥ Option + drag: pick up a cat or a bowl")
-                    Text("• Close a window and the cat on it tumbles down")
+                    Text(tr("• Hold the cursor over a cat and it purrs"))
+                    Text(tr("• ⌥ Option + drag: pick up a cat or a bowl"))
+                    Text(tr("• Close a window and the cat on it tumbles down"))
                 }
                 .font(.caption2).foregroundStyle(.secondary)
             }
 
             Divider()
+            HStack(spacing: 6) {
+                Image(systemName: "globe")
+                Picker(tr("Language"), selection: $state.lang) {
+                    ForEach(Lang.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .fixedSize()
+                Spacer()
+            }
             Button(role: .destructive) { NSApp.terminate(nil) } label: {
-                Label("Quit (remove all cats)", systemImage: "power")
+                Label(tr("Quit (remove all cats)"), systemImage: "power")
             }
             .buttonStyle(.borderless)
         }
@@ -137,7 +147,7 @@ struct MenuView: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
                     Text(c.name).font(.system(size: 13, weight: .semibold))
-                    Text(c.visible ? st.mood : "Hidden").font(.caption2).foregroundStyle(.secondary)
+                    Text(c.visible ? tr(st.mood) : tr("Hidden")).font(.caption2).foregroundStyle(.secondary)
                 }
                 if c.visible {
                     HStack(spacing: 6) {
@@ -155,10 +165,10 @@ struct MenuView: View {
                 Image(systemName: c.visible ? "eye" : "eye.slash")
             }
             .buttonStyle(.borderless)
-            .help(c.visible ? "Hide" : "Show")
+            .help(c.visible ? tr("Hide") : tr("Show"))
             Button { editing = c.id } label: { Image(systemName: "pencil") }
                 .buttonStyle(.borderless)
-                .help("Customize")
+                .help(tr("Customize"))
         }
         .padding(8)
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
@@ -191,22 +201,22 @@ struct CatEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Button { done() } label: { Label("Back", systemImage: "chevron.left") }.buttonStyle(.borderless)
+                Button { done() } label: { Label(tr("Back"), systemImage: "chevron.left") }.buttonStyle(.borderless)
                 Spacer()
             }
             HStack(spacing: 14) {
                 CatThumb(cfg: cat, size: 90)
                 VStack(alignment: .leading, spacing: 6) {
-                    TextField("Name", text: $cat.name).textFieldStyle(.roundedBorder)
-                    Text(preset(cat.coat).name).font(.caption).foregroundStyle(.secondary)
+                    TextField(tr("Name"), text: $cat.name).textFieldStyle(.roundedBorder)
+                    Text(tr(preset(cat.coat).name)).font(.caption).foregroundStyle(.secondary)
                     HStack {
-                        Text("Size").font(.caption)
+                        Text(tr("Size")).font(.caption)
                         Slider(value: $cat.size, in: 0.7...2.0)
                     }
                 }
             }
 
-            Text("Coat").font(.headline)
+            Text(tr("Coat")).font(.headline)
             do {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                     ForEach(coatPresets) { p in
@@ -217,7 +227,7 @@ struct CatEditor: View {
                         } label: {
                             VStack(spacing: 2) {
                                 CatThumb(cfg: preview, size: 46)
-                                Text(p.name).font(.system(size: 9)).lineLimit(1).minimumScaleFactor(0.7)
+                                Text(tr(p.name)).font(.system(size: 9)).lineLimit(1).minimumScaleFactor(0.7)
                             }
                             .padding(4)
                             .frame(maxWidth: .infinity)
@@ -230,7 +240,7 @@ struct CatEditor: View {
                 }
             }
 
-            Text("Eyes").font(.headline)
+            Text(tr("Eyes")).font(.headline)
             HStack(spacing: 8) {
                 ForEach(EyeColor.allCases) { e in
                     Button { cat.eyes = e } label: {
@@ -242,28 +252,28 @@ struct CatEditor: View {
                         .background(Capsule().stroke(cat.eyes == e ? Color.orange : Color.secondary.opacity(0.3), lineWidth: cat.eyes == e ? 2 : 1))
                     }
                     .buttonStyle(.plain)
-                    .help(e.name)
+                    .help(tr(e.name))
                 }
             }
 
-            Text("Hat").font(.headline)
+            Text(tr("Hat")).font(.headline)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
                 ForEach(hatOptions, id: \.id) { o in
-                    tile(with: { $0.hat = o.id }, name: o.name, selected: (cat.hat ?? "none") == o.id) { cat.hat = o.id }
+                    tile(with: { $0.hat = o.id }, name: tr(o.name), selected: (cat.hat ?? "none") == o.id) { cat.hat = o.id }
                 }
             }
 
-            Text("Costume").font(.headline)
+            Text(tr("Costume")).font(.headline)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
                 ForEach(outfitOptions, id: \.id) { o in
-                    tile(with: { $0.outfit = o.id }, name: o.name, selected: (cat.outfit ?? "none") == o.id) { cat.outfit = o.id }
+                    tile(with: { $0.outfit = o.id }, name: tr(o.name), selected: (cat.outfit ?? "none") == o.id) { cat.outfit = o.id }
                 }
             }
 
             HStack {
-                Button(role: .destructive) { remove() } label: { Label("Delete cat", systemImage: "trash") }
+                Button(role: .destructive) { remove() } label: { Label(tr("Delete cat"), systemImage: "trash") }
                 Spacer()
-                Button("Done") { done() }.buttonStyle(.borderedProminent).tint(.orange)
+                Button(tr("Done")) { done() }.buttonStyle(.borderedProminent).tint(.orange)
             }
         }
     }

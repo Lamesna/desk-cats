@@ -12,11 +12,15 @@ Everything lives in the menu bar: the cat icon opens your cat list, bowls, laser
 
 ## Download
 
-1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.1-macOS.zip`.
+1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.2-macOS.zip`.
 2. Unzip it and drag `Kotiki.app` into your Applications folder.
 3. On first launch macOS warns that it cannot verify the developer, because the app has no Apple certificate. Open System Settings → Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
 
 Requires macOS 13 or newer. Runs on Apple Silicon and Intel Macs.
+
+## Languages
+
+The app speaks English, Russian and Chinese (简体中文). It starts in your system language and you can switch it any time with the globe menu at the bottom of the Kotiki menu. The menu, coat and outfit names, cat moods, default cat names and the cats' speech bubbles all follow the chosen language.
 
 ## What the cats do
 
