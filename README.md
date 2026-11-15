@@ -1,90 +1,92 @@
-# Котики
+# Kotiki (Котики)
 
-Котики поселяются на рабочем столе вашего мака. Они бродят по низу экрана, забираются на окна, спят на виджетах, точат когти о край экрана и гоняются за курсором. Закроете окно, на котором дремал кот, и он свалится вниз с обиженной мордой.
+Desktop cats for macOS. They roam the bottom of your screen, climb onto your windows, nap on widgets, sharpen their claws on the screen edge and chase your cursor. Close the window a cat is dozing on and it tumbles to the floor with an offended face.
 
-Клики проходят сквозь котов, так что вы работаете как обычно. Котов можно кормить, гладить курсором и наряжать в костюм акулы или банана.
+Clicks pass straight through the cats, so you keep working as usual. You can feed them, pet them with the cursor and dress them up as a shark or a banana.
 
-Управление живёт в строке меню: иконка кота открывает список котов, миски, указку и наряды.
+Everything lives in the menu bar: the cat icon opens your cat list, bowls, laser pointer and outfits.
 
-![18 окрасов котиков](docs/cats.png)
+![18 coat colors](docs/cats.png)
 
-![Коты в шапках и костюмах](docs/costumes.png)
+![Cats in hats and costumes](docs/costumes.png)
 
-## Скачать
+## Download
 
-1. Откройте [последний релиз](https://github.com/MiLana-ec/desk-cats/releases/latest) и скачайте `Kotiki-1.0-macOS.zip`.
-2. Распакуйте архив и перенесите `Котики.app` в папку «Программы».
-3. При первом запуске macOS предупредит, что не может проверить разработчика: у приложения нет сертификата Apple. Откройте «Системные настройки» → «Конфиденциальность и безопасность», пролистайте вниз и нажмите «Всё равно открыть». На macOS 14 и старше хватит правого клика по приложению и пункта «Открыть».
+1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.0-macOS.zip`.
+2. Unzip it and drag `Котики.app` into your Applications folder.
+3. On first launch macOS warns that it cannot verify the developer, because the app has no Apple certificate. Open System Settings → Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
 
-Приложение работает на macOS 13 и новее, на маках с Apple Silicon и с Intel.
+Requires macOS 13 or newer. Runs on Apple Silicon and Intel Macs.
 
-## Что умеют коты
+The app interface is in Russian for now.
 
-- Ходят по полу, запрыгивают на окна и забираются по их бокам. Сверху спят, лежат «буханкой», умываются, точат когти.
-- Слезают по-разному: кто-то спрыгивает, кто-то сползает по стенке окна и цепляется когтями.
-- Висят под нижним краем окна или виджета и перебирают лапами.
-- Лезут по боковым краям экрана и точат о них когти.
-- Падают, если вы закрыли окно под ними, а потом шипят и обижаются.
-- Подкрадываются к спящему коту или к тому, кто сидит спиной, виляют попой и прыгают. Дальше начинается возня.
-- Нюхаются, боксируют, кувыркаются клубком, играют в догонялки и спят рядом щекой к щеке.
-- Мурчат, если подержать на них курсор.
+## What the cats do
 
-## Уход
+- Walk along the floor, jump onto windows and climb up their sides. Up top they sleep, loaf, wash and sharpen their claws.
+- Get down in different ways: some jump, some slide down the side of the window, claws digging in.
+- Hang from the bottom edge of a window or widget, paw over paw.
+- Climb the side edges of the screen and scratch them like a scratching post.
+- Fall when you close the window under them, then hiss and sulk.
+- Stalk a sleeping cat, or one with its back turned, wiggle their rumps and pounce. A tumble follows.
+- Sniff each other, box, wrestle in a ball of fur, play tag and sleep cheek to cheek.
+- Purr when you hold the cursor over them.
 
-- Миски с кормом и водой ставятся в любое место экрана. Голодный кот сам найдёт свою миску.
-- У каждого кота есть шкалы еды, воды, энергии и настроения.
-- Лазерная указка превращает курсор в красную точку. Коты прыгают за ней, а трое самых ловких повисают на курсоре и болтаются, когда вы его двигаете.
-- Чтобы взять кота или миску, зажмите ⌥ Option и перетащите. Брошенный кот летит по дуге.
+## Care and play
 
-## Внешний вид
+- Put food and water bowls anywhere on the screen. A hungry cat finds its bowl on its own.
+- Every cat has food, water, energy and mood bars.
+- The laser pointer turns your cursor into a red dot. Cats leap after it, and the three most agile ones hang on the cursor and swing as you move the mouse.
+- Hold ⌥ Option and drag to pick up a cat or a bowl. A thrown cat flies in an arc.
 
-- 18 окрасов: серо-белый, рыжий, чёрный, трёхцветный, сиамский и другие.
-- 6 вариантов глаз, включая разные.
-- 30 шапок и 29 костюмов: акула, банан, динозавры, панда, зайка, пчёлка, ведьма, Дед Мороз и другие. Почти у каждой шапки есть пара-костюм.
+## Looks
 
-Супергеройские вещи сделаны «по мотивам»: без логотипов, букв и названий персонажей.
+- 18 coats: gray and white, ginger, black, calico, Siamese and more.
+- 6 eye colors, including odd eyes.
+- 30 hats and 29 costumes: shark, banana, dinosaurs, panda, bunny, bee, witch, Santa and more. Nearly every hat has a matching costume.
 
-## Как собрать
+Superhero-style items are "inspired by" designs: no logos, letters or character names.
 
-Чтобы собрать из кода, нужен macOS 13 или новее и инструменты разработчика Xcode. Если их нет, поставьте командой:
+## Build from source
+
+You need macOS 13 or newer and the Xcode command line tools. If you do not have them, install with:
 
 ```bash
 xcode-select --install
 ```
 
-Соберите и запустите:
+Build and run:
 
 ```bash
 ./build.sh
 open "build/Котики.app"
 ```
 
-Приложение подписано локально, без сертификата Apple. Если macOS не даёт его открыть, нажмите на нём правой кнопкой и выберите «Открыть».
+`build.sh` produces a universal app for Apple Silicon and Intel. It is signed locally, without an Apple certificate. If macOS refuses to open it, right-click the app and choose Open.
 
-## Разрешения
+## Permissions
 
-- Окна, виджеты и курсор приложение видит без дополнительных разрешений.
-- Чтобы коты ходили по иконкам рабочего стола, приложение спрашивает у Finder, где они лежат. macOS один раз покажет запрос «Котики хотят управлять Finder». Если откажете, иконки просто не будут платформами.
+- The app sees windows, widgets and the cursor without extra permissions.
+- To let cats walk on your desktop icons, the app asks Finder where they are. macOS shows a one-time prompt: "Котики wants to control Finder". If you decline, the icons just stop being platforms.
 
-## Как выключить
+## How to turn it off
 
-Переключатель в меню прячет всех котов. Кнопка «Выйти» закрывает приложение, и коты исчезают. Список котов и их наряды сохраняются до следующего запуска.
+The switch in the menu hides every cat. The Quit button closes the app and the cats disappear. Your cat list and outfits are saved until the next launch.
 
-## Устройство
+## How it is built
 
-Приложение написано на Swift (AppKit и SwiftUI) без сторонних библиотек. Котов рисует код, картинок в проекте нет.
+The app is written in Swift (AppKit and SwiftUI) with no third-party libraries. The cats are drawn in code, and the project has no image assets.
 
-| Файл | Что внутри |
+| File | What is inside |
 |---|---|
-| `Sources/CatRenderer.swift` | Рисование котов, позы, глаза, маски |
-| `Sources/Costumes.swift` | Шапки-капюшоны и костюмы |
-| `Sources/World.swift` | Окна как платформы, физика, поведение котов |
-| `Sources/Hunt.swift` | Охота, края экрана, сползание, виджеты и иконки |
-| `Sources/Play.swift` | Игры котов, вис на курсоре |
-| `Sources/Overlay.swift` | Прозрачное окно поверх экрана |
-| `Sources/MenuUI.swift` | Меню в строке меню |
-| `Sources/Model.swift` | Окрасы, настройки котов, сохранение |
+| `Sources/CatRenderer.swift` | Cat drawing, poses, eyes, masks |
+| `Sources/Costumes.swift` | Hood hats and costumes |
+| `Sources/World.swift` | Windows as platforms, physics, cat behavior |
+| `Sources/Hunt.swift` | Stalking, screen edges, sliding down, widgets and icons |
+| `Sources/Play.swift` | Cat play, hanging from the cursor |
+| `Sources/Overlay.swift` | Transparent window over the screen |
+| `Sources/MenuUI.swift` | Menu bar interface |
+| `Sources/Model.swift` | Coats, cat settings, saving |
 
-## Лицензия
+## License
 
-MIT, подробности в файле `LICENSE`.
+MIT, see the `LICENSE` file.

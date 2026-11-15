@@ -1,11 +1,11 @@
 #!/bin/zsh
-# Собирает Котики.app рядом со скриптом
+# Builds Котики.app (Kotiki) next to this script
 set -e
 cd "$(dirname "$0")"
 APP="build/Котики.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-# универсальная сборка: Apple Silicon + Intel
+# universal build: Apple Silicon + Intel
 for ARCH in arm64 x86_64; do
   swiftc -O -swift-version 5 -target $ARCH-apple-macos13.0 \
     -o "build/DeskCats-$ARCH" Sources/*.swift \
@@ -31,4 +31,4 @@ cat > "$APP/Contents/Info.plist" <<EOF
 </dict></plist>
 EOF
 codesign --force -s - "$APP" >/dev/null 2>&1 || true
-echo "Готово: $APP"
+echo "Done: $APP"
