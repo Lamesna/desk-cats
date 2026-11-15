@@ -76,7 +76,7 @@ extension World {
             startWalk(c, c.pos.x + (c.pos.x >= t.pos.x ? 1 : -1) * 260, speed: 170)
             return
         }
-        if wasAsleep { t.say("Мяу?!", 1, now: now) }
+        if wasAsleep { t.say("Meow?!", 1, now: now) }
         let d = Duo(a: c, b: t, kind: .wrestle, now: now)
         d.approaching = false
         d.mid = (c.pos.x + t.pos.x) / 2

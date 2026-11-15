@@ -1,4 +1,4 @@
-# Kotiki (Котики)
+# Kotiki
 
 Desktop cats for macOS. They roam the bottom of your screen, climb onto your windows, nap on widgets, sharpen their claws on the screen edge and chase your cursor. Close the window a cat is dozing on and it tumbles to the floor with an offended face.
 
@@ -12,13 +12,11 @@ Everything lives in the menu bar: the cat icon opens your cat list, bowls, laser
 
 ## Download
 
-1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.0-macOS.zip`.
-2. Unzip it and drag `Котики.app` into your Applications folder.
+1. Open the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest) and download `Kotiki-1.1-macOS.zip`.
+2. Unzip it and drag `Kotiki.app` into your Applications folder.
 3. On first launch macOS warns that it cannot verify the developer, because the app has no Apple certificate. Open System Settings → Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
 
 Requires macOS 13 or newer. Runs on Apple Silicon and Intel Macs.
-
-The app interface is in Russian for now.
 
 ## What the cats do
 
@@ -58,7 +56,7 @@ Build and run:
 
 ```bash
 ./build.sh
-open "build/Котики.app"
+open "build/Kotiki.app"
 ```
 
 `build.sh` produces a universal app for Apple Silicon and Intel. It is signed locally, without an Apple certificate. If macOS refuses to open it, right-click the app and choose Open.
@@ -66,7 +64,7 @@ open "build/Котики.app"
 ## Permissions
 
 - The app sees windows, widgets and the cursor without extra permissions.
-- To let cats walk on your desktop icons, the app asks Finder where they are. macOS shows a one-time prompt: "Котики wants to control Finder". If you decline, the icons just stop being platforms.
+- To let cats walk on your desktop icons, the app asks Finder where they are. macOS shows a one-time prompt: "Kotiki wants to control Finder". If you decline, the icons just stop being platforms.
 
 ## How to turn it off
 

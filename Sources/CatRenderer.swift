@@ -131,12 +131,12 @@ func poly(_ pts: [CGPoint]) -> CGPath {
 }
 
 let hatOptions: [(id: String, name: String)] = [
-    ("none", "Без шапки"), ("shark", "Акула"), ("frog", "Лягушка"), ("crown", "Корона"), ("party", "Колпак"),
-    ("bow", "Бантик"), ("spider", "Маска паука"), ("horns", "Рогатый шлем"), ("winged", "Крылатый шлем"),
+    ("none", "No hat"), ("shark", "Shark"), ("frog", "Frog"), ("crown", "Crown"), ("party", "Party hat"),
+    ("bow", "Bow"), ("spider", "Spider mask"), ("horns", "Horned helm"), ("winged", "Winged helm"),
 ] + hoodHats
 let outfitOptions: [(id: String, name: String)] = [
-    ("none", "Без костюма"), ("cape", "Плащ героя"), ("bowtie", "Бабочка"),
-    ("shield", "Щит со звездой"), ("reactor", "Сияющий реактор"),
+    ("none", "No costume"), ("cape", "Hero cape"), ("bowtie", "Bow tie"),
+    ("shield", "Star shield"), ("reactor", "Glowing reactor"),
 ] + costumeOrder.map { ($0, costumes[$0]!.name) }
 
 enum CatRenderer {

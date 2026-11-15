@@ -60,11 +60,11 @@ struct MenuView: View {
     var main: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Котики").font(.system(size: 20, weight: .bold, design: .rounded))
+                Text("Kotiki").font(.system(size: 20, weight: .bold, design: .rounded))
                 Spacer()
                 Toggle("", isOn: $state.running).toggleStyle(.switch).labelsHidden()
             }
-            Text(state.running ? "Коты гуляют по экрану" : "Все коты спрятаны. Включите, чтобы вернуть.")
+            Text(state.running ? "Cats are roaming your screen" : "All cats are hidden. Switch on to bring them back.")
                 .font(.caption).foregroundStyle(.secondary)
 
             if state.running {
@@ -79,7 +79,7 @@ struct MenuView: View {
                     state.cats.append(c)
                     editing = c.id
                 } label: {
-                    Label("Добавить кота", systemImage: "plus.circle.fill").frame(maxWidth: .infinity)
+                    Label("Add a cat", systemImage: "plus.circle.fill").frame(maxWidth: .infinity)
                 }
                 .controlSize(.large)
                 .buttonStyle(.borderedProminent)
@@ -88,35 +88,35 @@ struct MenuView: View {
                 Divider()
 
                 Toggle(isOn: $state.laser) {
-                    Label("Лазерная указка вместо курсора", systemImage: "light.max")
+                    Label("Laser pointer instead of cursor", systemImage: "light.max")
                 }
                 .toggleStyle(.switch)
 
-                Text("Уход").font(.headline)
+                Text("Care").font(.headline)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                    careButton("Миска корма", "fork.knife") { state.placing = .food; close() }
-                    careButton("Миска воды", "drop.fill") { state.placing = .water; close() }
-                    careButton("Насыпать корм", "arrow.clockwise") { state.onBowlAction?("refillFood") }
-                    careButton("Налить воду", "arrow.clockwise") { state.onBowlAction?("refillWater") }
-                    careButton("Покормить всех", "heart.fill") { state.onBowlAction?("feedAll") }
-                    careButton("Убрать миски", "trash") { state.onBowlAction?("clear") }
+                    careButton("Food bowl", "fork.knife") { state.placing = .food; close() }
+                    careButton("Water bowl", "drop.fill") { state.placing = .water; close() }
+                    careButton("Refill food", "arrow.clockwise") { state.onBowlAction?("refillFood") }
+                    careButton("Refill water", "arrow.clockwise") { state.onBowlAction?("refillWater") }
+                    careButton("Feed everyone", "heart.fill") { state.onBowlAction?("feedAll") }
+                    careButton("Remove bowls", "trash") { state.onBowlAction?("clear") }
                 }
                 if state.placing != nil {
-                    Text("Кликните в любое место экрана, чтобы поставить миску. Правый клик — отмена.")
+                    Text("Click anywhere on the screen to place the bowl. Right-click to cancel.")
                         .font(.caption).foregroundStyle(.orange)
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("• Подержите курсор на коте, и он замурчит")
-                    Text("• ⌥ Option + перетаскивание: взять кота или миску")
-                    Text("• Закроете окно, и кот с него свалится")
+                    Text("• Hold the cursor over a cat and it purrs")
+                    Text("• ⌥ Option + drag: pick up a cat or a bowl")
+                    Text("• Close a window and the cat on it tumbles down")
                 }
                 .font(.caption2).foregroundStyle(.secondary)
             }
 
             Divider()
             Button(role: .destructive) { NSApp.terminate(nil) } label: {
-                Label("Выйти (убрать всех котов)", systemImage: "power")
+                Label("Quit (remove all cats)", systemImage: "power")
             }
             .buttonStyle(.borderless)
         }
@@ -137,7 +137,7 @@ struct MenuView: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
                     Text(c.name).font(.system(size: 13, weight: .semibold))
-                    Text(c.visible ? st.mood : "Спрятан").font(.caption2).foregroundStyle(.secondary)
+                    Text(c.visible ? st.mood : "Hidden").font(.caption2).foregroundStyle(.secondary)
                 }
                 if c.visible {
                     HStack(spacing: 6) {
@@ -155,10 +155,10 @@ struct MenuView: View {
                 Image(systemName: c.visible ? "eye" : "eye.slash")
             }
             .buttonStyle(.borderless)
-            .help(c.visible ? "Спрятать" : "Выпустить")
+            .help(c.visible ? "Hide" : "Show")
             Button { editing = c.id } label: { Image(systemName: "pencil") }
                 .buttonStyle(.borderless)
-                .help("Настроить")
+                .help("Customize")
         }
         .padding(8)
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
@@ -191,22 +191,22 @@ struct CatEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Button { done() } label: { Label("Назад", systemImage: "chevron.left") }.buttonStyle(.borderless)
+                Button { done() } label: { Label("Back", systemImage: "chevron.left") }.buttonStyle(.borderless)
                 Spacer()
             }
             HStack(spacing: 14) {
                 CatThumb(cfg: cat, size: 90)
                 VStack(alignment: .leading, spacing: 6) {
-                    TextField("Имя", text: $cat.name).textFieldStyle(.roundedBorder)
+                    TextField("Name", text: $cat.name).textFieldStyle(.roundedBorder)
                     Text(preset(cat.coat).name).font(.caption).foregroundStyle(.secondary)
                     HStack {
-                        Text("Размер").font(.caption)
+                        Text("Size").font(.caption)
                         Slider(value: $cat.size, in: 0.7...2.0)
                     }
                 }
             }
 
-            Text("Окрас").font(.headline)
+            Text("Coat").font(.headline)
             do {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                     ForEach(coatPresets) { p in
@@ -230,7 +230,7 @@ struct CatEditor: View {
                 }
             }
 
-            Text("Глаза").font(.headline)
+            Text("Eyes").font(.headline)
             HStack(spacing: 8) {
                 ForEach(EyeColor.allCases) { e in
                     Button { cat.eyes = e } label: {
@@ -246,14 +246,14 @@ struct CatEditor: View {
                 }
             }
 
-            Text("Шапка").font(.headline)
+            Text("Hat").font(.headline)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
                 ForEach(hatOptions, id: \.id) { o in
                     tile(with: { $0.hat = o.id }, name: o.name, selected: (cat.hat ?? "none") == o.id) { cat.hat = o.id }
                 }
             }
 
-            Text("Костюм").font(.headline)
+            Text("Costume").font(.headline)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
                 ForEach(outfitOptions, id: \.id) { o in
                     tile(with: { $0.outfit = o.id }, name: o.name, selected: (cat.outfit ?? "none") == o.id) { cat.outfit = o.id }
@@ -261,9 +261,9 @@ struct CatEditor: View {
             }
 
             HStack {
-                Button(role: .destructive) { remove() } label: { Label("Удалить кота", systemImage: "trash") }
+                Button(role: .destructive) { remove() } label: { Label("Delete cat", systemImage: "trash") }
                 Spacer()
-                Button("Готово") { done() }.buttonStyle(.borderedProminent).tint(.orange)
+                Button("Done") { done() }.buttonStyle(.borderedProminent).tint(.orange)
             }
         }
     }

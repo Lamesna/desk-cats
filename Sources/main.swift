@@ -11,7 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let b = statusItem.button {
-            b.image = NSImage(systemSymbolName: "cat.fill", accessibilityDescription: "Котики")
+            b.image = NSImage(systemSymbolName: "cat.fill", accessibilityDescription: "Kotiki")
             b.action = #selector(toggle)
             b.target = self
         }

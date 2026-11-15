@@ -56,7 +56,7 @@ extension World {
         c.until = now + Double.random(in: 4...9)
         c.swing = 0
         c.swingV = -c.facing * 2.5   // momentum of the leap
-        c.say("Мяу!", 1.2, now: now)
+        c.say("Meow!", 1.2, now: now)
         c.stats.fun = min(1, c.stats.fun + 0.15)
         // the cat with its back to you hangs in front of the others
         if slot == 2 { overlay.root.addSubview(c.view, positioned: .above, relativeTo: nil) }
@@ -87,7 +87,7 @@ extension World {
             c.vel = CGVector(dx: mouseVel.dx * 0.25 + c.swingV * L * cos(c.swing) * 0.6, dy: max(-300, min(300, mouseVel.dy * 0.25)))
             c.swing = 0
             c.swingV = 0
-            if shaken { c.say("Мяу!!", 1.2, now: now, alert: true) }
+            if shaken { c.say("Meow!!", 1.2, now: now, alert: true) }
             c.leapReady = now + 2
         }
     }
@@ -131,7 +131,7 @@ extension World {
         }
         d.chaseStart = now
         d.until = now + 7
-        runner.say("Мяу!", 1.2, now: now)
+        runner.say("Meow!", 1.2, now: now)
     }
 
     func endDuo(_ d: Duo) {
@@ -218,7 +218,7 @@ extension World {
             l.pos.x = d.mid - gap / 2 + sin(t * 3) * 3
             r.pos.x = d.mid + gap / 2 + sin(t * 3 + 1) * 3
             if Double.random(in: 0...1) < dt * 0.8 {
-                (Bool.random() ? l : r).say(["Мяу!", "Мяв!"].randomElement()!, 0.7, now: now)
+                (Bool.random() ? l : r).say(["Meow!", "Mew!"].randomElement()!, 0.7, now: now)
             }
             if now > d.until {
                 if Double.random(in: 0...1) < 0.6 { d.kind = .wrestle; d.until = now + 3.5 }
@@ -233,7 +233,7 @@ extension World {
             r.socialRot -= CGFloat(dt) * 9
             for c in [l, r] { c.socialPose = .roll; c.socialEyes = Bool.random() ? .angry : .closed }
             if Double.random(in: 0...1) < dt * 0.7 {
-                (Bool.random() ? l : r).say(["Мяу!", "Мяяу!"].randomElement()!, 0.6, now: now)
+                (Bool.random() ? l : r).say(["Meow!", "Meeow!"].randomElement()!, 0.6, now: now)
             }
             if now > d.until {
                 for c in [l, r] { c.socialRot = 0 }

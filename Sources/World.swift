@@ -357,7 +357,7 @@ final class World {
             bowls.forEach { $0.view.removeFromSuperview() }
             bowls.removeAll()
         case "feedAll":
-            for c in cats.values { c.stats.food = 1; c.stats.water = 1; c.say("Мяу~", 2, now: now) }
+            for c in cats.values { c.stats.food = 1; c.stats.water = 1; c.say("Meow~", 2, now: now) }
         default: break
         }
         app.bowlCount = bowls.count
@@ -440,7 +440,7 @@ final class World {
                 c.jumpToClimb = false
                 c.catchJump = false
                 c.jumpToUnder = false
-                c.say("Мяу?!", 1.5, now: now)
+                c.say("Meow?!", 1.5, now: now)
                 dragOffset = CGPoint(x: 0, y: 44 * c.scale)
                 c.pos = CGPoint(x: p.x, y: p.y - dragOffset.y)
             } else if let b = bowlAt(p) {
@@ -624,7 +624,7 @@ final class World {
                     c.catchJump = false
                     startFall(c, gentle: true)
                     c.vel.dx = c.facing * 40
-                    if Double.random(in: 0...1) < 0.3 { c.say("Мяу!", 0.8, now: now) }
+                    if Double.random(in: 0...1) < 0.3 { c.say("Meow!", 0.8, now: now) }
                 }
                 break
             }
@@ -705,7 +705,7 @@ final class World {
             if now > c.until || (c.stats.energy >= 1 && c.snuggleWith == nil) {
                 c.state = .sit
                 c.until = now + 2
-                c.say("Мяу~", 1.2, now: now)
+                c.say("Meow~", 1.2, now: now)
             }
 
         case .scratch:
@@ -738,37 +738,37 @@ final class World {
 
     func mood(_ c: Cat) -> String {
         switch c.state {
-        case .sleep: return "Спит 💤"
-        case .hiss, .grumpy: return "Обиделся 💢"
-        case .eat: return "Кушает"
-        case .drink: return "Пьёт"
-        case .purr: return "Мурчит ♥"
-        case .scratch: return "Точит когти"
-        case .climb: return "Лезет наверх"
-        case .dragged: return "Висит в лапах"
-        case .crouch: return "Охотится"
-        case .hang: return "Висит на курсоре"
-        case .stalk: return "Крадётся"
-        case .wiggle: return "Сейчас прыгнет"
-        case .wallClimb, .wallDown: return "Лезет по краю экрана"
-        case .underWin: return "Висит под окном"
-        case .slideDown: return "Сползает вниз"
-        case .wallScratch: return "Точит когти о край экрана"
+        case .sleep: return "Sleeping 💤"
+        case .hiss, .grumpy: return "Offended 💢"
+        case .eat: return "Eating"
+        case .drink: return "Drinking"
+        case .purr: return "Purring ♥"
+        case .scratch: return "Sharpening claws"
+        case .climb: return "Climbing up"
+        case .dragged: return "Dangling"
+        case .crouch: return "Hunting"
+        case .hang: return "Hanging on the cursor"
+        case .stalk: return "Stalking"
+        case .wiggle: return "About to pounce"
+        case .wallClimb, .wallDown: return "Climbing the screen edge"
+        case .underWin: return "Hanging under a window"
+        case .slideDown: return "Sliding down"
+        case .wallScratch: return "Scratching the screen edge"
         case .social:
             switch c.duo?.kind {
-            case .sniff: return "Нюхается"
-            case .boxing: return "Боксирует"
-            case .wrestle: return "Дерётся понарошку"
-            case .chase: return "Играет в догонялки"
-            default: return "Играет"
+            case .sniff: return "Sniffing noses"
+            case .boxing: return "Boxing"
+            case .wrestle: return "Play-fighting"
+            case .chase: return "Playing tag"
+            default: return "Playing"
             }
         default: break
         }
-        if c.stats.food < 0.3 { return "Голодный" }
-        if c.stats.water < 0.3 { return "Хочет пить" }
-        if c.stats.energy < 0.25 { return "Сонный" }
-        if c.stats.fun < 0.25 { return "Скучает" }
-        return c.surface == .ground ? "Гуляет" : "Сидит на окне"
+        if c.stats.food < 0.3 { return "Hungry" }
+        if c.stats.water < 0.3 { return "Thirsty" }
+        if c.stats.energy < 0.25 { return "Sleepy" }
+        if c.stats.fun < 0.25 { return "Bored" }
+        return c.surface == .ground ? "Roaming" : "Sitting on a window"
     }
 
     func startFall(_ c: Cat, gentle: Bool = false) {
@@ -933,10 +933,10 @@ final class World {
         if c.stats.food < 0.35, let b = nearestBowl(.food, to: c) { setGoal(.eat(b.id)); return }
         if c.stats.water < 0.35, let b = nearestBowl(.water, to: c) { setGoal(.drink(b.id)); return }
         if c.stats.food < 0.25 && Double.random(in: 0...1) < 0.5 {
-            c.say("Мяу!", 2.5, now: now); idle(c, .sit, 3...5); return
+            c.say("Meow!", 2.5, now: now); idle(c, .sit, 3...5); return
         }
         if c.stats.water < 0.25 && Double.random(in: 0...1) < 0.5 {
-            c.say("Мяу!", 2.5, now: now); idle(c, .sit, 3...5); return
+            c.say("Meow!", 2.5, now: now); idle(c, .sit, 3...5); return
         }
         if c.stats.energy < 0.25 {
             if joinSleeper(c, chance: 0.85) { return }
