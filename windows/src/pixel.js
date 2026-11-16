@@ -41,7 +41,7 @@
       let o = c;
       if (c === '#') o = 'k';
       else if (y <= 12) {
-        if (c === 'b') o = (y >= 8 && y <= 11 && x >= 3 && x <= 13 && !((x === 3 || x === 13) && (y === 8 || y === 11))) ? 'f' : 'h';
+        if (c === 'b') o = (((x - 7.5) / 5.6) ** 2 + ((y - 9.9) / 2.9) ** 2 <= 1) ? 'f' : 'h';           // the face a hood leaves open
         else if (c === 'p' && y <= 5) o = 'r';
       } else {
         if (c === 'b' || c === 'd') {
@@ -64,7 +64,7 @@
     R(g, x0, hy + 1, x0 + w - 1, hy + 9, 'h'); R(g, x0 + 1, hy, x0 + w - 2, hy, 'h');
     [[x0, hy + 1], [x0 + w - 1, hy + 1], [x0, hy + 9], [x0 + w - 1, hy + 9]].forEach(([x, y]) => S(g, x, y, null));
     [x0, x0 + w - 4].forEach((x) => { R(g, x, hy - 1, x + 3, hy, 'h'); R(g, x + 1, hy - 2, x + 2, hy - 2, 'h'); S(g, x + 1, hy - 1, 'r'); S(g, x + 2, hy - 1, 'r'); S(g, x + 1, hy, 'r'); });
-    for (let y = hy + 5; y <= hy + 9; y++) for (let x = x0 + w - 4; x <= x0 + w - 1; x++) if (g[y][x] === 'h') g[y][x] = 'f';
+    for (let y = hy + 3; y <= hy + 9; y++) for (let x = x0 + w - 6; x <= x0 + w - 1; x++) if (g[y][x] === 'h' && !(x === x0 + w - 6 && (y === hy + 3 || y === hy + 9))) g[y][x] = 'f';
     S(g, x0 + w - 5, hy + 4, eye); S(g, x0 + w - 5, hy + 5, eye);
     S(g, x0 + w - 1, hy + 6, 'p');
   }
@@ -107,14 +107,33 @@
     return g;
   }
 
+  // A cat on a window side, head up, belly and paws against the wall on the right (x = 22).
+  // slide: sliding down with the front claws dug in above the head.
+  function climbBase(k, slide) {
+    const g = mk(24, 32), st = k % 2 === 0 ? 1 : -1, bob = slide ? 0 : k % 2, sw = Math.floor(k / 2) % 2;
+    const frontNear = slide ? 1 : 5 - 2 * st, frontFar = slide ? 2 : 6 + 2 * st;
+    const hindNear = slide ? 28 : 25 + st, hindFar = slide ? 27 : 25 - st;
+    const paw = (y, c) => R(g, 20, y, 21, y + 1, c);
+    Ln(g, 17, 12 + bob, 19, frontFar, 'd', 2); paw(frontFar, 'd');
+    Ln(g, 14, 23 + bob, 19, hindFar, 'd', 2); paw(hindFar, 'd');
+    E(g, 14, 17 + bob, 4.2, 7, 'b'); E(g, 16.4, 17 + bob, 1.5, 5, 'v');
+    Ln(g, 12, 23 + bob, 10, 27, 't', 2); Ln(g, 10, 27, 9 + sw, 30, 't', 2);
+    Ln(g, 16, 12 + bob, 19, frontNear, 'b', 2); paw(frontNear, 'u');
+    E(g, 15, 22 + bob, 2.6, 2.8, 'b');
+    Ln(g, 16, 23 + bob, 19, hindNear, 'b', 2); paw(hindNear, 'u');
+    headAt(g, 7, 3 + bob, 11, 'e');
+    return g;
+  }
+
   // families: a letter grid, padded for tall hats, with the point on the ground and the leg row
   const FAM = {};
   function pad(g) { const o = mk(g[0].length + PAD_SIDE * 2, g.length + PAD_TOP); g.forEach((r, y) => r.forEach((c, x) => { o[y + PAD_TOP][x + PAD_SIDE] = c; })); return o; }
   function family(key) {
     if (FAM[key]) return FAM[key];
     const [kind, k] = key.split(':'), n = +k || 0;
-    let L, ground, legTop;
-    if (kind === 'sit') {
+    let L, ground, legTop, wallX = null;
+    if (kind === 'climb' || kind === 'slide') { L = climbBase(n, kind === 'slide'); ground = (kind === 'slide' ? 29 : 26) + PAD_TOP; legTop = 999; wallX = 22 + PAD_SIDE; }
+    else if (kind === 'sit') {
       L = frontBase();
       if (n === 1) for (const r of L) r.forEach((c, x) => { if (c === 'e') r[x] = 'k'; });                       // blink
       if (n === 2) { for (let y = 16; y < L.length; y++) for (let x = 13; x < L[0].length; x++) if (L[y][x] === 't') { L[y - 1][x] = L[y - 1][x] || 't'; } }
@@ -124,7 +143,7 @@
     else { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = 999; }
     L = pad(L);
     const Rg = L.map((row) => row.map((c) => ({ h: 'H', f: 'H', r: 'H', t: 'T', b: 'B', d: 'B', v: 'V', u: 'U' })[c] || c));
-    return (FAM[key] = { L, R: Rg, ground, legTop, side: kind !== 'sit', cx: Math.floor(L[0].length / 2) });
+    return (FAM[key] = { L, R: Rg, ground, legTop, side: kind !== 'sit', cx: Math.floor(L[0].length / 2), wallX });
   }
 
   // ---------- palette and coat patterns ----------
@@ -195,9 +214,20 @@
     const paint = (test, fn) => { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (C[y][x] && test(Rg[y][x], x, y)) { const c = fn(x, y, C[y][x]); if (c) C[y][x] = c; } };
     if (id === 'cape') {
       const c = hex(0xC62828), c2 = hex(0x8E1B1B);
-      for (let y = bb.y0; y <= bb.y1; y++) {
-        if (fam.side) { let mn = 999; for (let x = 0; x < W; x++) if (C[y][x] && Rg[y][x] === 'B') { mn = x; break; } for (let i = 1; i <= 3 && mn < 999; i++) if (!C[y][mn - i]) set(mn - i, y + i - 1, i === 3 ? c2 : c); }
-        else { let mn = 999, mx = -1; for (let x = 0; x < W; x++) if (C[y][x] && Rg[y][x] === 'B') { mn = Math.min(mn, x); mx = Math.max(mx, x); } if (mn < 999) { if (!C[y][mn - 1]) set(mn - 1, y, c); if (!C[y][mx + 1]) set(mx + 1, y, c2); } }
+      if (fam.side) {
+        // the cape lies over the back and trails behind the rump
+        const midY = Math.floor((bb.y0 + bb.y1) / 2);
+        for (let y = bb.y0; y <= midY; y++) for (let x = 0; x < W; x++) if (Rg[y][x] === 'B' && C[y][x]) set(x, y, c);
+        for (let i = 1; i <= 3; i++) { const x = bb.x0 + 1 - i; if (x < 0) continue; for (let y = bb.y0 + i; y <= Math.min(H - 1, midY + i); y++) if (!C[y][x]) set(x, y, i === 3 ? c2 : c); }
+        set(bb.x1 - 1, bb.y0, hex(0xF2C230));
+      } else {
+        // seen from the front: red edges on both sides, a gold clasp at the neck
+        for (let y = bb.y0; y <= bb.y1; y++) {
+          let mn = 999, mx = -1; for (let x = 0; x < W; x++) if (C[y][x] && (Rg[y][x] === 'B' || Rg[y][x] === 'V')) { mn = Math.min(mn, x); mx = Math.max(mx, x); }
+          if (mn === 999) continue;
+          for (let d = 1; d <= 2; d++) { if (mn - d >= 0 && !C[y][mn - d]) set(mn - d, y, d === 2 ? c2 : c); if (mx + d < W && !C[y][mx + d]) set(mx + d, y, d === 2 ? c2 : c); }
+        }
+        set(Math.floor((bb.x0 + bb.x1) / 2), bb.y0, hex(0xF2C230));
       }
       return;
     }
@@ -212,7 +242,7 @@
     const ex = EXTRAS[id] || {};
     if (ex.stripes) { const c = hex(ex.stripes); paint((r) => r === 'B' || r === 'T' || r === 'V', (x, y) => (((fam.side ? x : y) >> 1) % 2 === 0 ? c : null)); }
     if (ex.spots) paint((r, x, y) => (r === 'B' || r === 'T') && hash(x, y, 5) % 9 === 0, (x, y) => hex(ex.spots[hash(x, y, 3) % ex.spots.length]));
-    if (ex.web) { const c = hex(ex.web); paint((r, x, y) => (r === 'B' || r === 'T') && (x + y) % 5 === 0, () => c); }
+    if (ex.web) { const c = hex(ex.web); paint((r, x, y) => (r === 'B' || r === 'T') && y < fam.legTop && (x % 4 === 0 || y % 4 === 0), () => c); }
     if (ex.stars) { const c = hex(ex.stars); paint((r, x, y) => (r === 'B') && hash(x, y, 11) % 12 === 0, () => c); }
     if (ex.diamonds) { const c = hex(ex.diamonds); paint((r, x, y) => (r === 'B') && (x + y) % 6 === 0 && x % 2 === 0, () => c); }
     if (ex.collar) { const c = hex(ex.collar); paint((r, x, y) => r === 'B' && y <= bb.y0 + 1, () => c); }
@@ -221,8 +251,7 @@
     if (ex.bow) { const c = hex(ex.bow), cx = fam.side ? bb.x1 : Math.round((bb.x0 + bb.x1) / 2), cy = bb.y0; [-2, -1, 1, 2].forEach((d) => set(cx + d, cy, c)); set(cx, cy, dk(c, 0.7)); }
     if (ex.spikes || ex.fin) {
       const c = hex(ex.spikes || ex.fin), cols = [];
-      if (fam.side) { for (let x = bb.x0 + 1; x <= bb.x1 - 1; x += ex.fin ? 99 : 3) cols.push(x); if (ex.fin) cols.length = 0, cols.push(Math.round((bb.x0 + bb.x1) / 2)); }
-      else cols.push(bb.x0 + 3, bb.x1 - 3);
+      if (fam.side && fam.wallX === null) { for (let x = bb.x0 + 1; x <= bb.x1 - 1; x += ex.fin ? 99 : 3) cols.push(x); if (ex.fin) cols.length = 0, cols.push(Math.round((bb.x0 + bb.x1) / 2)); }
       cols.forEach((x) => { const t = topEdge(C, x, 0, H - 1); if (t > 1) { set(x, t - 1, c); set(x, t - 2, c); if (ex.fin) { set(x - 1, t - 1, c); set(x + 1, t - 1, c); set(x, t - 3, c); } } });
       // tail spikes
       if (ex.spikes) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (Rg[y][x] === 'T' && C[y][x] && y % 3 === 0) { const nx = fam.side ? x - 1 : x + 1; if (!C[y][nx]) set(nx, y, c); }
@@ -281,7 +310,24 @@
       case 'ironhelm': hood(col(0xC62828), { ears: 'none', rim: col(0x8E1B1B) }); box(cx - hw + 1, cr + 1, cx + hw - 1, cr + 1, col(0xF2C230)); break;
       case 'shark': hood(col(0x5D7C9C), { ears: 'none' }); box(cx - 1, cr - 3, cx, cr - 1, col(0x4A6683)); set(cx - 1, cr - 4, col(0x4A6683)); break;
       case 'frog': hood(col(0x79A85A), { ears: 'round', earColor: col(0x79A85A) }); set(hd.x0 + 2, cr - 2, col(0xFFFFFF)); set(hd.x1 - 1, cr - 2, col(0xFFFFFF)); set(hd.x0 + 3, cr - 2, col(0x2A2730)); set(hd.x1, cr - 2, col(0x2A2730)); break;
-      case 'spider': headCells((x, y, l) => (l === 'e' ? col(0xFFFFFF) : l === 'p' ? null : col(0xD7262F))); headCells((x, y, l, c) => ((x + y) % 4 === 0 && l !== 'e' ? col(0x6E1015) : null)); break;
+      case 'spider': {
+        // red mask over the head, the ears stay; web lines; big white eyes with black rims; white muzzle
+        const red = col(0xD7262F), web = col(0x7A0F16), rimK = col(0x1E1A1E), white = col(0xFFFFFF);
+        headCells((x, y, l) => (y < cr || l === 'p' || l === 'r' ? null : red));
+        if (fam.side) {
+          headCells((x, y, l) => (y >= cr && l !== 'p' && l !== 'r' && ((x - hd.x0) % 3 === 0 || (y - cr) % 3 === 2) ? web : null));
+          for (let y = hd.y1 - 2; y <= hd.y1; y++) for (let x = hd.x1 - 3; x <= hd.x1; x++) if (Rg[y][x] === 'H' && C[y][x]) set(x, y, white);
+          let eye = null; for (let y = 0; y < H && !eye; y++) for (let x = 0; x < W; x++) if (L[y][x] === 'e') { eye = [x, y]; break; }
+          if (eye) { box(eye[0] - 2, eye[1] - 1, eye[0] + 1, eye[1] + 2, rimK); box(eye[0] - 1, eye[1], eye[0], eye[1] + 1, white); }
+        } else {
+          const put = (x, y, c) => { if (Rg[y + PAD_TOP][x + PAD_SIDE] === 'H' && C[y + PAD_TOP][x + PAD_SIDE]) set(x + PAD_SIDE, y + PAD_TOP, c); };
+          [[7, 4], [7, 5], [7, 6], [7, 7], [7, 8], [6, 5], [5, 6], [4, 7], [8, 5], [9, 6], [10, 7], [4, 5], [10, 5], [3, 6], [11, 6], [2, 8], [12, 8], [1, 9], [13, 9], [2, 11], [13, 11]].forEach(([x, y]) => put(x, y, web));
+          ['KKK..', 'KWWKK', 'KWWWK', '.KKKK'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === '.') return; const c = ch === 'K' ? rimK : white; put(2 + i, 7 + j, c); put(13 - i, 7 + j, c); }));
+          for (let y = 11; y <= 12; y++) for (let x = 5; x <= 10; x++) put(x, y, white);
+          put(6, 12, rimK); put(9, 12, rimK);
+        }
+        break;
+      }
       case 'horns': hood(col(0x9AA3AD), { ears: 'none' }); [hd.x0 + 1, hd.x1 - 2].forEach((x, i) => { box(x, cr - 3, x + 1, cr - 1, col(0xF1E7D2)); set(i ? x + 2 : x - 1, cr - 4, col(0xF1E7D2)); }); break;
       case 'winged': hood(col(0xD8B24A), { ears: 'none' }); [[hd.x0 - 2, -1], [hd.x1 + 1, 1]].forEach(([x]) => { box(x, cr - 2, x + 1, cr - 1, col(0xFFFFFF)); set(x + (x < cx ? 0 : 1), cr - 3, col(0xFFFFFF)); }); break;
       case 'chick': hood(col(0xF6D44A), { ears: 'none' }); box(cx - 1, cr - 2, cx + 1, cr - 1, col(0xF6D44A)); set(cx, cr - 3, col(0xF6D44A)); break;
@@ -345,7 +391,7 @@
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const p = g[y][x]; if (!p) continue; const i = (y * W + x) * 4; id.data[i] = p[0]; id.data[i + 1] = p[1]; id.data[i + 2] = p[2]; id.data[i + 3] = 255; bx0 = Math.min(bx0, x); bx1 = Math.max(bx1, x); by0 = Math.min(by0, y); by1 = Math.max(by1, y); }
     cx.putImageData(id, 0, 0);
     // anchor: the middle of the feet for upright cats, the bounding box for turned ones
-    const ax = rot === 0 ? fam.cx : (bx0 + bx1 + 1) / 2, ay = rot === 0 ? fam.ground + 2 : by1 + 1;
+    const ax = rot === 0 ? (fam.wallX !== null ? fam.wallX : fam.cx) : (bx0 + bx1 + 1) / 2, ay = rot === 0 ? fam.ground + (fam.wallX !== null ? 1 : 2) : by1 + 1;   // climbers hang on the wall line
     s = { cv, ax, ay, W, H, bx0, bx1, by0, by1 }; cache.set(sig, s); return s;
   }
 
@@ -368,8 +414,10 @@
       case 'jump': return { f: 'jump:' + (ri.progress < 0.5 ? 0 : 1), rot: 0, eyes };
       case 'fall': return { f: 'jump:1', rot: q(ri.rotation), eyes: 'open' };
       case 'hiss': return { f: 'hiss:' + (Math.floor(t * 8) % 2), rot: 0, eyes: 'open', shake: Math.sin(t * 40) };
-      case 'climb': case 'wallScratch': return { f: 'walk:' + (ri.pose === 'climb' ? walkK : (Math.floor(t * 6) % 2 ? 0 : 2)), rot: 1, eyes, flip: ri.climbSide > 0 };
-      case 'slide': return { f: 'walk:1', rot: 3, eyes: 'open', flip: ri.climbSide < 0 };
+      // the wall is on the cat's right in the sprite; on a left wall it is mirrored
+      case 'climb': return { f: 'climb:' + walkK, rot: 0, eyes, flip: ri.climbSide > 0, wall: true };
+      case 'slide': return { f: 'slide:0', rot: 0, eyes: 'open', flip: ri.climbSide > 0, wall: true };
+      case 'wallScratch': return { f: 'climb:' + (Math.floor(t * 6) % 2 ? 0 : 2), rot: 0, eyes };
       case 'traverse': return { f: 'walk:' + walkK, rot: 2, eyes };
       case 'hangSide': return { f: 'sit:0', rot: 0, eyes: 'open' };
       case 'hangBack': case 'dangle': return { f: 'sit:0', rot: 0, eyes: 'open' };
@@ -382,7 +430,7 @@
 
   function drawCat(ctx, c, ri, H, now) {
     const p = pick(ri, now, c), s = sprite(c.look, p.f, p.rot, p.eyes), cs = cell(c.scale);
-    const flip = (ri.facing < 0 ? -1 : 1) * (p.flip ? -1 : 1);
+    const flip = p.wall ? (p.flip ? -1 : 1) : (ri.facing < 0 ? -1 : 1) * (p.flip ? -1 : 1);
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     ctx.translate(Math.round(c.x + (p.shake || 0) * cs * 0.5), Math.round(H - c.y));

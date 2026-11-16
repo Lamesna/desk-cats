@@ -89,8 +89,9 @@ enum PixelCats {
                 if c == "#" { o = "k" }
                 else if y <= 12 {
                     if c == "b" {
-                        let face = y >= 8 && y <= 11 && x >= 3 && x <= 13 && !((x == 3 || x == 13) && (y == 8 || y == 11))
-                        o = face ? "f" : "h"
+                        // the face: a rounded patch around the eyes, nose and chin (a hood leaves it open)
+                        let dx = (Double(x) - 7.5) / 5.6, dy = (Double(y) - 9.9) / 2.9
+                        o = dx * dx + dy * dy <= 1 ? "f" : "h"
                     } else if c == "p" && y <= 5 { o = "r" }
                 } else {
                     if c == "b" || c == "d" {
@@ -111,7 +112,10 @@ enum PixelCats {
             s.rect(x, hy - 1, x + 3, hy, "h"); s.rect(x + 1, hy - 2, x + 2, hy - 2, "h")
             s[x + 1, hy - 1] = "r"; s[x + 2, hy - 1] = "r"; s[x + 1, hy] = "r"
         }
-        for y in (hy + 5)...(hy + 9) { for x in (x0 + w - 4)...(x0 + w - 1) where s[x, y] == "h" { s[x, y] = "f" } }
+        // the face: muzzle and eye, rounded at the top back corner
+        for y in (hy + 3)...(hy + 9) {
+            for x in (x0 + w - 6)...(x0 + w - 1) where s[x, y] == "h" && !(x == x0 + w - 6 && (y == hy + 3 || y == hy + 9)) { s[x, y] = "f" }
+        }
         s[x0 + w - 5, hy + 4] = eye; s[x0 + w - 5, hy + 5] = eye
         s[x0 + w - 1, hy + 6] = "p"
     }
@@ -160,14 +164,42 @@ enum PixelCats {
         return s.g
     }
 
-    private struct Family { let L: LGrid; let R: LGrid; let ground: Int; let legTop: Int; let side: Bool; let cx: Int }
+    /// A cat on a window side, head up, belly and paws against the wall on the right (x = 22).
+    /// `slide`: sliding down with the front claws dug in above the head.
+    private static func climbBase(_ k: Int, slide: Bool) -> LGrid {
+        var s = Sheet(24, 32)
+        let st = k % 2 == 0 ? 1 : -1, bob = slide ? 0 : k % 2, sw = (k / 2) % 2
+        // paws on the wall: one front paw reaches up while the other pulls, the hind paws push in turn
+        let frontNear = slide ? 1 : 5 - 2 * st, frontFar = slide ? 2 : 6 + 2 * st
+        let hindNear = slide ? 28 : 25 + st, hindFar = slide ? 27 : 25 - st
+        func paw(_ y: Int, _ c: Character) { s.rect(20, y, 21, y + 1, c) }
+        // far legs, behind the body
+        s.line(17, 12 + bob, 19, frontFar, "d", 2); paw(frontFar, "d")
+        s.line(14, 23 + bob, 19, hindFar, "d", 2); paw(hindFar, "d")
+        // body pressed to the wall, belly towards it
+        s.ell(14, 17 + Double(bob), 4.2, 7, "b"); s.ell(16.4, 17 + Double(bob), 1.5, 5, "v")
+        // tail hangs down and sways
+        s.line(12, 23 + bob, 10, 27, "t", 2); s.line(10, 27, 9 + sw, 30, "t", 2)
+        // near legs
+        s.line(16, 12 + bob, 19, frontNear, "b", 2); paw(frontNear, "u")
+        s.ell(15, 22 + Double(bob), 2.6, 2.8, "b")
+        s.line(16, 23 + bob, 19, hindNear, "b", 2); paw(hindNear, "u")
+        // head on top, a little back from the wall so the reaching paws show
+        headAt(&s, 7, 3 + bob, 11, "e")
+        return s.g
+    }
+
+    private struct Family { let L: LGrid; let R: LGrid; let ground: Int; let legTop: Int; let side: Bool; let cx: Int; var wallX: Int? = nil }
     private static var families: [String: Family] = [:]
 
     private static func family(_ key: String) -> Family {
         if let f = families[key] { return f }
         let parts = key.split(separator: ":"), kind = String(parts[0]), n = Int(parts.count > 1 ? parts[1] : "0") ?? 0
-        var L: LGrid, ground: Int, legTop: Int
-        if kind == "sit" {
+        var L: LGrid, ground: Int, legTop: Int, wallX: Int? = nil
+        if kind == "climb" || kind == "slide" {
+            L = climbBase(n, slide: kind == "slide")
+            ground = (kind == "slide" ? 29 : 26) + padTop; legTop = 999; wallX = 22 + padSide
+        } else if kind == "sit" {
             L = frontBase()
             if n == 1 { for y in L.indices { for x in L[y].indices where L[y][x] == "e" { L[y][x] = "k" } } }         // blink
             if n == 2 { for y in 16..<L.count { for x in 13..<L[0].count where L[y][x] == "t" { if L[y - 1][x] == nil { L[y - 1][x] = "t" } } } }
@@ -181,7 +213,7 @@ enum PixelCats {
         for y in L.indices { for x in L[y].indices { P[y + padTop][x + padSide] = L[y][x] } }
         let map: [Character: Character] = ["h": "H", "f": "H", "r": "H", "t": "T", "b": "B", "d": "B", "v": "V", "u": "U"]
         let R: LGrid = P.map { $0.map { c in c.map { map[$0] ?? $0 } } }
-        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit", cx: P[0].count / 2)
+        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit", cx: P[0].count / 2, wallX: wallX)
         families[key] = f
         return f
     }
@@ -269,15 +301,32 @@ enum PixelCats {
             for y in 0..<H { for x in 0..<W where C[y][x] != nil && test(R[y][x], x, y) { if let c = fn(x, y) { C[y][x] = c } } }
         }
         let mx = (bb.x0 + bb.x1) / 2, my = (bb.y0 + bb.y1) / 2 - 1
+        func col2(_ h: UInt32) -> RGB { RGB(hex: h) }
         switch id {
         case "cape":
             let c = RGB(hex: 0xC62828), c2 = RGB(hex: 0x8E1B1B)
-            for y in bb.y0...bb.y1 {
-                var mn = 999, mxx = -1
-                for x in 0..<W where C[y][x] != nil && R[y][x] == "B" { mn = min(mn, x); mxx = max(mxx, x) }
-                guard mn < 999 else { continue }
-                if fam.side { for i in 1...3 where mn - i >= 0 && C[y][mn - i] == nil { set(mn - i, y + i - 1, i == 3 ? c2 : c) } }
-                else { if mn > 0 && C[y][mn - 1] == nil { set(mn - 1, y, c) }; if mxx + 1 < W && C[y][mxx + 1] == nil { set(mxx + 1, y, c2) } }
+            if fam.side {
+                // the cape lies over the back and trails behind the rump
+                let midY = (bb.y0 + bb.y1) / 2
+                for y in bb.y0...midY { for x in 0..<W where R[y][x] == "B" && C[y][x] != nil { set(x, y, c) } }
+                for i in 1...3 {
+                    let x = bb.x0 + 1 - i
+                    guard x >= 0 else { continue }
+                    for y in (bb.y0 + i)...min(H - 1, midY + i) where C[y][x] == nil { set(x, y, i == 3 ? c2 : c) }
+                }
+                set(bb.x1 - 1, bb.y0, col2(0xF2C230))
+            } else {
+                // seen from the front: red edges on both sides, a gold clasp at the neck
+                for y in bb.y0...bb.y1 {
+                    var mn = 999, mxx = -1
+                    for x in 0..<W where C[y][x] != nil && (R[y][x] == "B" || R[y][x] == "V") { mn = min(mn, x); mxx = max(mxx, x) }
+                    guard mn < 999 else { continue }
+                    for d in 1...2 {
+                        if mn - d >= 0 && C[y][mn - d] == nil { set(mn - d, y, d == 2 ? c2 : c) }
+                        if mxx + d < W && C[y][mxx + d] == nil { set(mxx + d, y, d == 2 ? c2 : c) }
+                    }
+                }
+                set(mx, bb.y0, col2(0xF2C230))
             }
             return
         case "bowtie":
@@ -297,7 +346,7 @@ enum PixelCats {
         let ex = extras[id] ?? Extras()
         if let s = ex.stripes { let c = RGB(hex: s); paint({ r, _, _ in r == "B" || r == "T" || r == "V" }) { x, y in ((fam.side ? x : y) >> 1) % 2 == 0 ? c : nil } }
         if let sp = ex.spots { paint({ r, x, y in (r == "B" || r == "T") && phash(x, y, 5) % 9 == 0 }) { x, y in RGB(hex: sp[Int(phash(x, y, 3) % UInt32(sp.count))]) } }
-        if let w = ex.web { let c = RGB(hex: w); paint({ r, x, y in (r == "B" || r == "T") && (x + y) % 5 == 0 }) { _, _ in c } }
+        if let w = ex.web { let c = RGB(hex: w); paint({ r, x, y in (r == "B" || r == "T") && y < fam.legTop && (x % 4 == 0 || y % 4 == 0) }) { _, _ in c } }
         if let s = ex.stars { let c = RGB(hex: s); paint({ r, x, y in r == "B" && phash(x, y, 11) % 12 == 0 }) { _, _ in c } }
         if let d = ex.diamonds { let c = RGB(hex: d); paint({ r, x, y in r == "B" && (x + y) % 6 == 0 && x % 2 == 0 }) { _, _ in c } }
         if let k = ex.collar { let c = RGB(hex: k); paint({ r, _, y in r == "B" && y <= bb.y0 + 1 }) { _, _ in c } }
@@ -307,8 +356,7 @@ enum PixelCats {
             let c = RGB(hex: hx)
             var cols: [Int] = []
             if ex.fin != nil { cols = [mx] }
-            else if fam.side { cols = Array(stride(from: bb.x0 + 1, through: bb.x1 - 1, by: 3)) }
-            else { cols = [bb.x0 + 3, bb.x1 - 3] }
+            else if fam.side && fam.wallX == nil { cols = Array(stride(from: bb.x0 + 1, through: bb.x1 - 1, by: 3)) }
             for x in cols {
                 var t = -1
                 for y in 0..<H where C[y][x] != nil { t = y; break }
@@ -403,8 +451,30 @@ enum PixelCats {
             hood(col(0x79A85A), ears: "round", earColor: col(0x79A85A))
             set(x0 + 2, cr - 2, white); set(x1 - 1, cr - 2, white); set(x0 + 3, cr - 2, col(0x2A2730)); set(x1, cr - 2, col(0x2A2730))
         case "spider":
-            headCells { _, _, l in l == "e" ? white : (l == "p" ? nil : col(0xD7262F)) }
-            headCells { x, y, l in (x + y) % 4 == 0 && l != "e" ? col(0x6E1015) : nil }
+            // red mask over the head, the ears stay; web lines; big white eyes with black rims; white muzzle
+            let red = col(0xD7262F), web = col(0x7A0F16), rimK = col(0x1E1A1E)
+            headCells { _, y, l in y < cr || l == "p" || l == "r" ? nil : red }
+            if fam.side {
+                headCells { x, y, l in y >= cr && l != "p" && l != "r" && ((x - x0) % 3 == 0 || (y - cr) % 3 == 2) ? web : nil }
+                for y in max(0, y1 - 2)...y1 { for x in max(0, x1 - 3)...x1 where R[y][x] == "H" && C[y][x] != nil { set(x, y, white) } }
+                var eye: (Int, Int)? = nil
+                for y in 0..<H { for x in 0..<W where L[y][x] == "e" && eye == nil { eye = (x, y) } }
+                if let (ex, ey) = eye { box(ex - 2, ey - 1, ex + 1, ey + 2, rimK); box(ex - 1, ey, ex, ey + 1, white) }
+            } else {
+                let ox = padSide, oy = padTop
+                func put(_ x: Int, _ y: Int, _ c: RGB) { if R[y + oy][x + ox] == "H" && C[y + oy][x + ox] != nil { set(x + ox, y + oy, c) } }
+                for (x, y) in [(7, 4), (7, 5), (7, 6), (7, 7), (7, 8), (6, 5), (5, 6), (4, 7), (8, 5), (9, 6), (10, 7),
+                               (4, 5), (10, 5), (3, 6), (11, 6), (2, 8), (12, 8), (1, 9), (13, 9), (2, 11), (13, 11)] { put(x, y, web) }
+                let leftEye = ["KKK..", "KWWKK", "KWWWK", ".KKKK"]
+                for (j, row) in leftEye.enumerated() {
+                    for (i, ch) in row.enumerated() where ch != "." {
+                        let c = ch == "K" ? rimK : white
+                        put(2 + i, 7 + j, c); put(13 - i, 7 + j, c)
+                    }
+                }
+                for y in 11...12 { for x in 5...10 { put(x, y, white) } }
+                put(6, 12, rimK); put(9, 12, rimK)
+            }
         case "horns":
             hood(col(0x9AA3AD))
             for (i, x) in [x0 + 1, x1 - 2].enumerated() { box(x, cr - 3, x + 1, cr - 1, col(0xF1E7D2)); set(i == 1 ? x + 2 : x - 1, cr - 4, col(0xF1E7D2)) }
@@ -514,8 +584,9 @@ enum PixelCats {
                                 space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
                                 provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else { return nil }
         // anchor: the middle of the feet for upright cats, the bounding box for turned ones
-        let ax = rot == 0 ? CGFloat(fam.cx) : CGFloat(bx0 + bx1 + 1) / 2
-        let ay = rot == 0 ? CGFloat(fam.ground + 2) : CGFloat(by1 + 1)
+        // climbers hang on the wall line, by the hind paws
+        let ax = rot == 0 ? CGFloat(fam.wallX ?? fam.cx) : CGFloat(bx0 + bx1 + 1) / 2
+        let ay = rot == 0 ? CGFloat(fam.ground + (fam.wallX == nil ? 2 : 1)) : CGFloat(by1 + 1)
         let s = Sprite(img: img, ax: ax, ay: ay, w: W, h: H, box: CGRect(x: bx0, y: by0, width: bx1 - bx0 + 1, height: by1 - by0 + 1))
         cache[sig] = s
         return s
@@ -523,7 +594,7 @@ enum PixelCats {
 
     // MARK: which sprite for which pose
 
-    struct Pick { var f: String; var rot = 0; var eyesOpen = true; var flip = false; var shake: CGFloat = 0 }
+    struct Pick { var f: String; var rot = 0; var eyesOpen = true; var flip = false; var shake: CGFloat = 0; var wall = false }
 
     static func pick(_ ri: RenderInfo) -> Pick {
         func q(_ a: CGFloat) -> Int { Int((a / (.pi / 2)).rounded()) }
@@ -548,9 +619,10 @@ enum PixelCats {
         case .jump: return Pick(f: "jump:\(ri.progress < 0.5 ? 0 : 1)", eyesOpen: open)
         case .fall: return Pick(f: "jump:1", rot: q(ri.rotation))
         case .hiss: return Pick(f: "hiss:\(Int(t * 8) % 2)", shake: CGFloat(sin(t * 40)))
-        case .climb: return Pick(f: "walk:\(walkK)", rot: 1, eyesOpen: open, flip: ri.climbSide > 0)
-        case .wallScratch: return Pick(f: "walk:\(paw)", rot: 1, eyesOpen: open, flip: ri.climbSide > 0)
-        case .slide: return Pick(f: "walk:1", rot: 3, flip: ri.climbSide < 0)
+        // the wall is on the cat's right in the sprite; on a left wall it is mirrored
+        case .climb: return Pick(f: "climb:\(walkK)", eyesOpen: open, flip: ri.climbSide > 0, wall: true)
+        case .slide: return Pick(f: "slide:0", flip: ri.climbSide > 0, wall: true)
+        case .wallScratch: return Pick(f: "climb:\(paw)", eyesOpen: open)
         case .traverse: return Pick(f: "walk:\(walkK)", rot: 2, eyesOpen: open)
         case .hangSide, .hangBack, .dangle: return Pick(f: "sit:0")
         case .roll: return Pick(f: "sit:0", rot: q(ri.rotation))
@@ -564,7 +636,8 @@ enum PixelCats {
         let p = pick(ri)
         guard let s = sprite(look, p.f, rot: p.rot, eyesOpen: p.eyesOpen) else { return }
         let cs = cell(scale)
-        let flip: CGFloat = (ri.facing < 0 ? -1 : 1) * (p.flip ? -1 : 1)
+        // on a wall only the wall side matters; elsewhere the cat looks where it goes
+        let flip: CGFloat = p.wall ? (p.flip ? -1 : 1) : (ri.facing < 0 ? -1 : 1) * (p.flip ? -1 : 1)
         ctx.saveGState()
         ctx.interpolationQuality = .none
         ctx.setShouldAntialias(false)
