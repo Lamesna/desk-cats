@@ -20,6 +20,7 @@ cat > "$APP/Contents/Info.plist" <<EOF
   <key>CFBundleName</key><string>Kotiki</string>
   <key>CFBundleDisplayName</key><string>Kotiki</string>
   <key>CFBundleIdentifier</key><string>local.deskcats</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundleExecutable</key><string>DeskCats</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>1.4</string>
@@ -32,6 +33,8 @@ cat > "$APP/Contents/Info.plist" <<EOF
   <key>NSAppleEventsUsageDescription</key><string>Kotiki asks Finder where your desktop icons are, so the cats can walk on them.</string>
 </dict></plist>
 EOF
+mkdir -p "$APP/Contents/Resources"
+cp AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 # system dialogs (the Finder permission prompt) follow the macOS language
 for L in en ru zh-Hans; do mkdir -p "$APP/Contents/Resources/$L.lproj"; done
 printf '%s\n' '"NSAppleEventsUsageDescription" = "Kotiki asks Finder where your desktop icons are, so the cats can walk on them.";' \

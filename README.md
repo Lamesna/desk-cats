@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/icon.png" width="128" alt="Kotiki icon"></p>
+
 # Kotiki
 
 Desktop cats for your screen. They roam the bottom of the display, climb onto your windows, sharpen their claws on the screen edge and chase your cursor. Close the window a cat is dozing on and it tumbles to the floor with an offended face.
