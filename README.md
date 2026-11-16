@@ -20,8 +20,8 @@ The cats are pixel art: small sprites with crisp edges that sit, walk, gallop, c
 
 | Platform | Folder | Status | Download |
 |---|---|---|---|
-| **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 2.1 | [Latest release](https://github.com/MiLana-ec/desk-cats/releases/latest), file `Kotiki-2.1-macOS.zip` |
-| **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.3.1 | [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.3.1), file `Kotiki-0.3.1-Windows-x64.zip` |
+| **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 2.1 | [Latest release](https://github.com/Lamesna/desk-cats/releases/latest), file `Kotiki-2.1-macOS.zip` |
+| **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.3.1 | [Windows release](https://github.com/Lamesna/desk-cats/releases/tag/windows-v0.3.1), file `Kotiki-0.3.1-Windows-x64.zip` |
 
 The macOS app is native Swift. The Windows app is a separate port built with Electron. Both draw the same pixel cats and share the same costumes and behavior, but the code is independent.
 

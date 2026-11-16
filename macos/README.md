@@ -2,7 +2,7 @@
 
 The native macOS version of Kotiki. See the [main README](../README.md) for what the cats do. Everything lives in the menu bar.
 
-Requires macOS 13 or newer. Runs on Apple Silicon and Intel Macs. Download the ready app from the [latest release](https://github.com/MiLana-ec/desk-cats/releases/latest).
+Requires macOS 13 or newer. Runs on Apple Silicon and Intel Macs. Download the ready app from the [latest release](https://github.com/Lamesna/desk-cats/releases/latest).
 
 ## Build from source
 
