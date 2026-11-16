@@ -66,6 +66,16 @@ enum EyeColor: String, Codable, CaseIterable, Identifiable {
         case .odd: return "Odd eyes"
         }
     }
+    var hexes: (UInt32, UInt32) {
+        switch self {
+        case .green: return (0x7BC24A, 0x7BC24A)
+        case .yellow: return (0xEACB45, 0xEACB45)
+        case .amber: return (0xE39A2C, 0xE39A2C)
+        case .blue: return (0x62AEEA, 0x62AEEA)
+        case .copper: return (0xC8732E, 0xC8732E)
+        case .odd: return (0x62AEEA, 0xEACB45)
+        }
+    }
     var colors: (NSColor, NSColor) {
         switch self {
         case .green: return (NSColor(hex: 0x7BC24A), NSColor(hex: 0x7BC24A))
@@ -110,6 +120,9 @@ final class AppState: ObservableObject {
     @Published var cats: [CatConfig] = [] { didSet { if cats != oldValue { save(); onCatsChanged?() } } }
     @Published var running = true { didSet { if running != oldValue { onRunningChanged?() } } }
     @Published var laser = false
+    @Published var pixel = UserDefaults.standard.bool(forKey: "kotiki.pixel") {
+        didSet { UserDefaults.standard.set(pixel, forKey: "kotiki.pixel") }
+    }
     @Published var placing: BowlKind? = nil
     @Published var stats: [UUID: CatStats] = [:]
     @Published var bowlCount = 0

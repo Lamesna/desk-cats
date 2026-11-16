@@ -76,11 +76,15 @@ final class CatView: NSView {
         guard let ctx = NSGraphicsContext.current?.cgContext, let look else { return }
         let s = scale
         let anchor = CGPoint(x: 75 * s, y: 45 * s)
-        ctx.saveGState()
-        ctx.translateBy(x: anchor.x, y: anchor.y)
-        ctx.scaleBy(x: s, y: s)
-        CatRenderer.draw(ctx, look: look, ri: info)
-        ctx.restoreGState()
+        if AppState.shared.pixel {
+            PixelCats.draw(ctx, look: look, ri: info, scale: s, at: anchor)
+        } else {
+            ctx.saveGState()
+            ctx.translateBy(x: anchor.x, y: anchor.y)
+            ctx.scaleBy(x: s, y: s)
+            CatRenderer.draw(ctx, look: look, ri: info)
+            ctx.restoreGState()
+        }
 
         let headTop: CGFloat
         switch info.pose {

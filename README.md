@@ -10,18 +10,28 @@ Clicks pass straight through the cats, so you keep working as usual. You can fee
 
 ![Cats in hats and costumes](docs/costumes.png)
 
+## Pixel cats
+
+Prefer pixel art? Turn on **Pixel cats** in the menu (on both macOS and Windows). Every cat switches to a pixel sprite: all 18 coats, every hat and every costume. It is one look or the other, and you can switch back any time.
+
+![Pixel cats in all 18 coats](docs/pixel-coats.png)
+
+![Pixel cats in hats](docs/pixel-hats.png)
+
+![Pixel cats in costumes](docs/pixel-costumes.png)
+
 ## Pick your version
 
 | Platform | Folder | Status | Download |
 |---|---|---|---|
-| **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 1.4 | [Latest release](https://github.com/MiLana-ec/desk-cats/releases/latest), file `Kotiki-1.4-macOS.zip` |
+| **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 1.5 | [Latest release](https://github.com/MiLana-ec/desk-cats/releases/latest), file `Kotiki-1.5-macOS.zip` |
 | **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.2.0 | [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.2.0), file `Kotiki-0.2.0-Windows-x64.zip` |
 
 The macOS app is native Swift. The Windows app is a separate port built with Electron. Both draw the same cats and share the same look, costumes and behavior, but the code is independent.
 
 ### macOS
 
-1. Download `Kotiki-1.4-macOS.zip` from the latest release, unzip it and drag `Kotiki.app` into Applications.
+1. Download `Kotiki-1.5-macOS.zip` from the latest release, unzip it and drag `Kotiki.app` into Applications.
 2. On first launch macOS says it cannot verify the developer, because the app has no Apple certificate. Open System Settings, Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
 3. The cat icon in the menu bar opens your cat list, bowls, laser pointer and outfits. Hold Option and drag to pick up a cat.
 

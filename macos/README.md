@@ -25,6 +25,10 @@ open build/Kotiki.app
 
 Hold Option and drag to pick up a cat or a bowl. The switch in the menu hides every cat; Quit closes the app.
 
+## Pixel cats
+
+The **Pixel cats** switch in the menu turns every cat, coat, hat and costume into pixel art. `Sources/Pixel.swift` builds the sprites with the same design as the Windows version (`windows/src/pixel.js`).
+
 ## How it is built
 
 Swift (AppKit and SwiftUI), no third-party libraries. The cats are drawn in code, with no image assets.
@@ -39,4 +43,5 @@ Swift (AppKit and SwiftUI), no third-party libraries. The cats are drawn in code
 | `Sources/Overlay.swift` | Transparent window over the screen |
 | `Sources/MenuUI.swift` | Menu bar interface |
 | `Sources/Model.swift` | Coats, cat settings, saving |
+| `Sources/Pixel.swift` | Pixel cats: sprites, coats, hats, costumes |
 | `Sources/Localization.swift` | English, Russian and Chinese text |

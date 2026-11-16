@@ -14,4 +14,8 @@ windows/tools/shot-hand.js
 windows/tools/shot-pixel.js
 windows/tools/shot-cats.js
 windows/tools/extract-sprites.js
-docs/pixel-*.png
+docs/pixel-preview.png
+docs/pixel-anim-preview.png
+docs/pixel-hand-sit.png
+docs/pixel-cats-A.png
+docs/pixel-hats-check.png

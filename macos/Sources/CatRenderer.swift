@@ -11,9 +11,12 @@ struct CatLook {
     let seed: UInt32
     let hat: String
     let outfit: String
+    let baseHex: UInt32, accentHex: UInt32, eyeHexL: UInt32, eyeHexR: UInt32
 
     init(_ c: CatConfig) {
         let p = preset(c.coat)
+        baseHex = p.base; accentHex = p.accent
+        (eyeHexL, eyeHexR) = c.eyes.hexes
         let b = NSColor(hex: p.base)
         base = b.cgColor
         accent = NSColor(hex: p.accent).cgColor
