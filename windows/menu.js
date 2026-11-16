@@ -21,6 +21,7 @@
 
   /** A cat picture on a small canvas, drawn by the same renderer as the overlay. */
   function thumb(cfg, size) {
+    if (K.pixelMode && K.pixel) return K.pixel.thumb(cfg, size);
     const dpr = window.devicePixelRatio || 1;
     const cv = document.createElement('canvas');
     cv.width = cv.height = Math.round(size * dpr);
@@ -70,6 +71,7 @@
         } }, '＋  ' + tr('Add a cat')),
         h('hr'),
         h('div', { class: 'row' }, h('span', { class: 'grow' }, '🔴  ' + tr('Laser pointer instead of cursor')), sw(state.laser, () => send('laser', { value: !state.laser }))),
+        h('div', { class: 'row', style: 'margin-top:8px' }, h('span', { class: 'grow' }, '👾  ' + tr('Pixel cats')), sw(state.pixel, () => send('pixel', { value: !state.pixel }))),
         h('h2', {}, tr('Care')),
         h('div', { class: 'grid2' },
           careButton('Food bowl', '🍽', () => send('placing', { kind: 'food' })),
@@ -134,6 +136,7 @@
   function render() {
     if (!state) return;
     K.lang = state.lang;
+    K.pixelMode = !!state.pixel;
     const cat = editingId && state.cats.find((c) => c.id === editingId);
     if (editingId && !cat) editingId = null;
     // keep the scroll position and the focused input while the state refreshes

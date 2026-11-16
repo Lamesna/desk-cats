@@ -30,6 +30,7 @@
 
   function applyState(s) {
     K.lang = s.lang;
+    K.pixelMode = !!s.pixel;
     setup(s.display);
     world.running = s.running;
     world.laser = s.laser;

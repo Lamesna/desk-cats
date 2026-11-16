@@ -31,12 +31,16 @@ function loadState() {
   K.lang = lang;
   let cats = Array.isArray(saved.cats) && saved.cats.length ? saved.cats : null;
   if (!cats) cats = [K.newCat(K.catNames[lang][0], 'grayWhite', 'green', 1.2)];
-  state = { cats, running: saved.running !== false, laser: false, placing: null, lang };
+  state = { cats, running: saved.running !== false, laser: false, placing: null, lang, pixel: saved.pixel === true || process.env.KOTIKI_PIXEL === '1' };
+  if (process.env.KOTIKI_DEMO) {                                           // for development: a few dressed cats
+    const mk = (n, coat, hat, outfit) => Object.assign(K.newCat(n, coat, K.preset(coat).eyes, 1.3), { hat, outfit });
+    state.cats = [mk('A', 'grayWhite', 'none', 'c_dino'), mk('B', 'ginger', 'bunny', 'none'), mk('C', 'calico', 'witch', 'none'), mk('D', 'siamese', 'none', 'c_bee')];
+  }
 }
 function saveState() {
   try {
     fs.mkdirSync(app.getPath('userData'), { recursive: true });
-    fs.writeFileSync(dataFile(), JSON.stringify({ cats: state.cats, running: state.running, lang: state.lang }, null, 1));
+    fs.writeFileSync(dataFile(), JSON.stringify({ cats: state.cats, running: state.running, lang: state.lang, pixel: state.pixel }, null, 1));
   } catch (e) { log('save failed: ' + e.message); }
 }
 
@@ -126,6 +130,7 @@ function handleAction(a) {
   switch (a.type) {
     case 'running': state.running = !!a.value; applyRunning(); break;
     case 'laser': state.laser = !!a.value; break;
+    case 'pixel': state.pixel = !!a.value; break;
     case 'placing': state.placing = a.kind; if (menu) menu.hide(); break;       // get out of the way so you can click
     case 'bowlAction': if (overlay) overlay.webContents.send('bowlAction', a.name); return;
     case 'addCat': state.cats.push(a.cat); break;

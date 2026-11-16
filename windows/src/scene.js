@@ -75,11 +75,14 @@
   /** One cat with its extras. `ri` is the render info from World.renderInfo. */
   function drawCat(ctx, gc, c, ri, H, now) {
     const s = c.scale, ax = c.x, ay = c.y, sy = H - ay;       // feet in canvas coordinates
-    ctx.save();
-    ctx.translate(ax, sy);
-    ctx.scale(s, -s);
-    K.draw(gc, c.look, ri);
-    ctx.restore();
+    if (K.pixelMode && K.pixel) K.pixel.drawCat(ctx, c, ri, H, now);
+    else {
+      ctx.save();
+      ctx.translate(ax, sy);
+      ctx.scale(s, -s);
+      K.draw(gc, c.look, ri);
+      ctx.restore();
+    }
 
     const headTop = ['sleep', 'loaf', 'crouch', 'eat'].includes(ri.pose) ? 30 : ri.pose === 'climb' ? 52 : ri.pose === 'dangle' ? 58 : 46;
     const up = (dy) => sy - dy * s;                            // a point `dy` cat pixels above the feet

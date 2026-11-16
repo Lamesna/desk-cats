@@ -4,3 +4,14 @@ build/
 macos/build/
 windows/node_modules/
 windows/dist/
+windows/assets/pixel/
+windows/tools/pixel-anim*
+windows/tools/pixel-hand*
+windows/tools/pixel-cats*
+windows/tools/pixel.html
+windows/tools/shot-anim.js
+windows/tools/shot-hand.js
+windows/tools/shot-pixel.js
+windows/tools/shot-cats.js
+windows/tools/extract-sprites.js
+docs/pixel-*.png

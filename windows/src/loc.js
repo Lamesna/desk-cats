@@ -27,6 +27,7 @@
 
   const ru = {
     'Language': 'Язык',
+    'Pixel cats': 'Пиксельные коты',
     'Cats are roaming your screen': 'Коты гуляют по экрану',
     'All cats are hidden. Switch on to bring them back.': 'Все коты спрятаны. Включите, чтобы вернуть.',
     'Add a cat': 'Добавить кота',
@@ -71,6 +72,7 @@
 
   const zh = {
     'Language': '语言',
+    'Pixel cats': '像素猫',
     'Cats are roaming your screen': '小猫们正在屏幕上闲逛',
     'All cats are hidden. Switch on to bring them back.': '所有小猫都藏起来了。打开开关，它们就会回来。',
     'Add a cat': '添加小猫',
