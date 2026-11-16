@@ -91,6 +91,8 @@ final class Cat {
     var slideGripUntil = 0.0
     var jumpToUnder = false
     var grabReadyAt = 0.0
+    var edgeHopReadyAt = 0.0
+    var runMood = false
     var underWin: CGWindowID = 0
     var underOffset: CGFloat = 0
     var underTarget: CGFloat = 0
@@ -608,7 +610,11 @@ final class World {
             let step = c.speed * f
             if abs(dx) <= step {
                 c.pos.x = c.targetX
-                if app.laser { c.state = .crouch; c.until = now + 1 } else { decide(c) }
+                if app.laser { c.state = .crouch; c.until = now + 1 }
+                else if c.speed > 100 * c.scale, c.surface != nil, Double.random(in: 0...1) < 0.35 {
+                    // zoomies: turn round and sprint back
+                    startWalk(c, c.pos.x - c.facing * CGFloat.random(in: 160...420), speed: CGFloat.random(in: 140...175))
+                } else { decide(c) }
             } else {
                 c.facing = dx > 0 ? 1 : -1
                 c.pos.x += c.facing * step
@@ -619,6 +625,7 @@ final class World {
         case .climb:
             guard let p = platforms[c.climbWin] else { startFall(c); break }
             if !sideVisible(c.climbWin, left: c.climbSide < 0) { loseSupport(c); break }
+            if tryEdgeTransfer(c, dt) { break }
             let seg = p.nearestSeg(c.pos.x)
             c.pos.x = c.climbSide < 0 ? seg.lo : seg.hi
             // scramble in bursts: hind legs push → fast surge, front paws grab → short pause
@@ -929,7 +936,7 @@ final class World {
             guard let b = bowl(id), b.amount > 0.01, let bs = b.surface else { c.goal = .none; return false }
             let side: CGFloat = c.pos.x < b.pos.x ? -1 : 1
             let tx = b.pos.x + side * 21 * c.scale
-            let hungry: CGFloat = 70
+            let hungry: CGFloat = (c.stats.food < 0.2 || c.stats.water < 0.2) ? 140 : 70      // starving cats rush to the bowl
             if navigate(c, to: bs, x: tx, speed: hungry) {
                 c.facing = -side
                 if case .eat = c.goal { c.state = .eat } else { c.state = .drink }
@@ -948,7 +955,7 @@ final class World {
                 }
                 return true
             }
-            navigate(c, to: .window(id), x: c.goalX)
+            navigate(c, to: .window(id), x: c.goalX, speed: c.runMood ? 135 : nil)
             return true
         }
     }
@@ -980,6 +987,7 @@ final class World {
             startSleep(c); return
         }
         if c.stats.energy < 0.6, joinSleeper(c, chance: 0.25) { return }
+        c.runMood = Double.random(in: 0...1) < 0.3      // sometimes the cat is in a running mood
         if tryAmbush(c) { return }
         if trySocial(c) { return }
         if c.surface == .ground && Double.random(in: 0...1) < 0.04 { startEdgeTour(c); return }
@@ -988,7 +996,7 @@ final class World {
         let r = Double.random(in: 0...1)
         if c.surface == .ground {
             if r < 0.32 {
-                startWalk(c, CGFloat.random(in: minX...maxX))
+                startWalk(c, CGFloat.random(in: minX...maxX), speed: c.runMood ? CGFloat.random(in: 125...175) : nil)
             } else if r < 0.58, let p = randomPlatform(for: c) {
                 setGoal(.visit(p.id), x: p.clampX(CGFloat.random(in: p.rect.minX...p.rect.maxX), inset: 30))
             } else if r < 0.72 {
@@ -1004,7 +1012,7 @@ final class World {
             }
         } else if case .window(let id) = c.surface, let p = platforms[id] {
             if r < 0.22 {
-                startWalk(c, CGFloat.random(in: p.rect.minX...p.rect.maxX))
+                startWalk(c, CGFloat.random(in: p.rect.minX...p.rect.maxX), speed: c.runMood ? CGFloat.random(in: 125...170) : nil)
             } else if r < 0.42 {
                 if !joinSleeper(c, chance: 0.5) { startSleep(c) }
             } else if r < 0.57 {

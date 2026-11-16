@@ -253,6 +253,7 @@ extension World {
         let s = c.scale
         guard let p = platforms[c.climbWin] else { startFall(c); return }   // window vanished under the claws
         if !sideVisible(c.climbWin, left: c.climbSide < 0) { loseSupport(c); return }   // covered by another window
+        if tryEdgeTransfer(c, dt) { return }
         c.pos.x = c.climbSide < 0 ? p.rect.minX : p.rect.maxX
         if now < c.slideGripUntil {
             c.slideV = max(0, c.slideV - 1400 * f)          // claws caught: brake hard
@@ -550,6 +551,41 @@ extension World {
         c.jDur = Double(0.28 + b.dist / 1100)
         c.jumpToClimb = true
         c.say("Meow!", 1, now: now)
+        return true
+    }
+
+    // MARK: - Leaping from one window's side to the next
+
+    /// Clinging to the side of a window, spring across the gap to a visible side of a neighbouring window
+    /// and carry on climbing there, so a cat can work its way around any number of windows.
+    func tryEdgeTransfer(_ c: Cat, _ dt: Double) -> Bool {
+        guard now > c.edgeHopReadyAt, c.state == .climb || c.state == .slideDown,
+              Double.random(in: 0...1) < dt * 0.9 else { return false }
+        let s = c.scale
+        var best: (p: Platform, left: Bool, edge: CGFloat, y: CGFloat, d: CGFloat)?
+        for (id, r) in zRects where id != c.climbWin {
+            guard let p = platforms[id], r.height > 130 * s else { continue }
+            let y = min(max(c.pos.y, r.minY + 26 * s), p.y - 72 * s)
+            guard abs(y - c.pos.y) < 30 else { continue }
+            for left in [true, false] {
+                let edge = left ? r.minX : r.maxX
+                guard edge > visible.minX + 20, edge < visible.maxX - 20, sideVisible(id, left: left) else { continue }
+                // the cat's body stays outside the window it grabs: a left edge is reached from the left
+                guard left == (edge > c.pos.x) else { continue }
+                let d = abs(edge - c.pos.x)
+                guard d > 6, d < 230 else { continue }
+                if best == nil || d < best!.d { best = (p, left, edge, y, d) }
+            }
+        }
+        guard let b = best else { return false }
+        c.edgeHopReadyAt = now + 2.5
+        c.goal = .none
+        c.climbWin = b.p.id
+        c.climbSide = b.left ? -1 : 1
+        startJump(c, to: CGPoint(x: b.edge, y: b.y), target: .ground, height: 12)
+        c.jDur = Double(0.24 + b.d / 1000)
+        c.jumpToClimb = true
+        if Double.random(in: 0...1) < 0.3 { c.say("Meow!", 0.8, now: now) }
         return true
     }
 }
