@@ -28,12 +28,10 @@ final class Duo {
 
 extension World {
 
-    // MARK: hunting the laser: leap, catch, hang (max 3: left, right, back-to-user)
+    // MARK: hunting the laser: leap, catch, hang (one cat at a time, right under the dot)
 
     func freeHangSlot(prefer: Int) -> Int? {
-        let taken = Set(cats.values.filter { $0.state == .hang }.map(\.hangSlot))
-        for s in [prefer, 1 - prefer, 2] where !taken.contains(s) { return s }
-        return nil
+        cats.values.contains { $0.state == .hang } ? nil : 2
     }
 
     func catchLeap(_ c: Cat) {

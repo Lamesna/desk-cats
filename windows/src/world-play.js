@@ -443,12 +443,10 @@
   };
 
   // =====================================================================================
-  // Hunting the laser: leap, catch, hang (max 3: left, right, back-to-user)
+  // Hunting the laser: leap, catch, hang (one cat at a time, right under the dot)
   // =====================================================================================
   P.freeHangSlot = function (prefer) {
-    const taken = new Set([...this.cats.values()].filter((c) => c.state === 'hang').map((c) => c.hangSlot));
-    for (const s of [prefer, 1 - prefer, 2]) if (!taken.has(s)) return s;
-    return null;
+    return [...this.cats.values()].some((c) => c.state === 'hang') ? null : 2;
   };
 
   P.catchLeap = function (c) {

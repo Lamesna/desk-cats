@@ -165,6 +165,16 @@ enum PixelCats {
             // the tail streams out behind
             let tip = by - 2 - (f % 2)
             s.line(4, by, 1, tip, "t", 2); s.line(1, tip, 0, tip - 2, "t", 2)
+        } else if kind == "scratch" {
+            // sharpening the claws on the floor: rump up, chest down, front legs stretched far forward, raking in turn
+            let st = k % 2
+            s.line(6, 9, 7, 18, "d", 2); s[7, 19] = "d"; s[8, 19] = "d"
+            s.line(15, 15, 25 - st * 3, 18, "d", 2); s[25 - st * 3, 19] = "d"; s[26 - st * 3, 19] = "d"
+            s.ell(8, 9, 5.5, 3.2, "b"); s.ell(4, 7, 3.2, 3, "b"); s.ell(13, 13, 4, 2.6, "b"); s.ell(10, 11.5, 4.2, 1.2, "v")
+            s.line(3, 9, 3, 18, "b", 2); s[3, 19] = "u"; s[4, 19] = "u"
+            headAt(&s, 11, 8, 12, "e")
+            s.line(16, 15, 22 + st * 3, 18, "b", 2); s[22 + st * 3, 19] = "u"; s[23 + st * 3, 19] = "u"
+            s.line(2, 6, 1, 2, "t", 2); s.line(1, 2, 2 + st, 0, "t", 2)
         } else if kind == "stalk" || kind == "wiggle" {
             // hunting: low to the ground, head forward, tail straight back; the wiggle lifts the rump in turn
             let st = k % 2
@@ -195,27 +205,37 @@ enum PixelCats {
         return s.g
     }
 
-    /// A cat on a window side, head up, belly and paws against the wall on the right (x = 22).
-    /// `slide`: sliding down with the front claws dug in above the head.
-    private static func climbBase(_ k: Int, slide: Bool) -> LGrid {
+    /// A cat against a wall on its right (x = 22), head up, belly towards the wall.
+    /// mode "climb": going up, paws taking turns; "slide": skidding down, front claws dug in high above the head
+    /// and dragging in turn, hind paws braced; "wallscratch": standing on the hind legs, front paws raking the wall.
+    private static func climbBase(_ k: Int, mode: String) -> LGrid {
         var s = Sheet(24, 32)
-        let st = k % 2 == 0 ? 1 : -1, bob = slide ? 0 : k % 2, sw = (k / 2) % 2
-        // paws on the wall: one front paw reaches up while the other pulls, the hind paws push in turn
-        let frontNear = slide ? 1 : 5 - 2 * st, frontFar = slide ? 2 : 6 + 2 * st
-        let hindNear = slide ? 28 : 25 + st, hindFar = slide ? 27 : 25 - st
+        let st = k % 2 == 0 ? 1 : -1, sw = (k / 2) % 2
         func paw(_ y: Int, _ c: Character) { s.rect(20, y, 21, y + 1, c) }
-        // far legs, behind the body
+        if mode == "wallscratch" {
+            let near = st > 0 ? 3 : 8, far = st > 0 ? 8 : 3
+            s.line(17, 12, 19, far, "d", 2); paw(far, "d")
+            s.line(13, 22, 13, 26, "d", 2); s.rect(12, 27, 13, 28, "d")
+            s.ell(14, 16, 4.2, 7, "b"); s.ell(16.4, 16, 1.5, 5, "v")
+            s.line(11, 22, 8, 26, "t", 2); s.line(8, 26, 5, 27, "t", 2)
+            s.line(16, 12, 19, near, "b", 2); paw(near, "u")
+            s.ell(15, 21, 2.6, 2.8, "b")
+            s.line(16, 22, 17, 26, "b", 2); s.rect(17, 27, 18, 28, "u")
+            headAt(&s, 7, 3, 11, "e")
+            return s.g
+        }
+        let slide = mode == "slide", bob = slide ? 0 : k % 2
+        // climbing: one front paw reaches up while the other pulls, the hind paws push in turn
+        // sliding: the claws catch and let go one after the other, the hind paws scrabble against the wall
+        let frontNear = slide ? (st > 0 ? 0 : 3) : 5 - 2 * st, frontFar = slide ? (st > 0 ? 3 : 0) : 6 + 2 * st
+        let hindNear = slide ? (st > 0 ? 28 : 26) : 25 + st, hindFar = slide ? (st > 0 ? 26 : 28) : 25 - st
         s.line(17, 12 + bob, 19, frontFar, "d", 2); paw(frontFar, "d")
         s.line(14, 23 + bob, 19, hindFar, "d", 2); paw(hindFar, "d")
-        // body pressed to the wall, belly towards it
         s.ell(14, 17 + Double(bob), 4.2, 7, "b"); s.ell(16.4, 17 + Double(bob), 1.5, 5, "v")
-        // tail hangs down and sways
-        s.line(12, 23 + bob, 10, 27, "t", 2); s.line(10, 27, 9 + sw, 30, "t", 2)
-        // near legs
+        s.line(12, 23 + bob, 10, 27, "t", 2); s.line(10, 27, slide ? 8 + (k % 2) * 3 : 9 + sw, 30, "t", 2)
         s.line(16, 12 + bob, 19, frontNear, "b", 2); paw(frontNear, "u")
         s.ell(15, 22 + Double(bob), 2.6, 2.8, "b")
         s.line(16, 23 + bob, 19, hindNear, "b", 2); paw(hindNear, "u")
-        // head on top, a little back from the wall so the reaching paws show
         headAt(&s, 7, 3 + bob, 11, "e")
         return s.g
     }
@@ -227,13 +247,13 @@ enum PixelCats {
         let off = arms ? 4 : 0, sw = k % 2, head = frontBase()
         s.ell(8, 18 + Double(off), 3.6, 5.5, "b"); s.ell(8, 18.5 + Double(off), 1.8, 4, "v")
         if arms {
-            s.line(4, 14 + off, 5, 1, "b", 2); s.line(11, 14 + off, 10, 1, "b", 2)
+            s.line(4, 14 + off, 5, 1, "l", 2); s.line(11, 14 + off, 10, 1, "l", 2)
             s.rect(5, 0, 6, 1, "u"); s.rect(9, 0, 10, 1, "u")
         } else {
-            s.line(4, 14, 4 - sw, 20, "b", 2); s.line(11, 14, 12 + sw, 20, "b", 2)
+            s.line(4, 14, 4 - sw, 20, "l", 2); s.line(11, 14, 12 + sw, 20, "l", 2)
             s.rect(4 - sw, 21, 5 - sw, 21, "u"); s.rect(12 + sw, 21, 13 + sw, 21, "u")
         }
-        s.line(5, 22 + off, 5 + sw, 27 + off, "b", 2); s.line(10, 22 + off, 10 - sw, 27 + off, "b", 2)
+        s.line(5, 22 + off, 5 + sw, 27 + off, "l", 2); s.line(10, 22 + off, 10 - sw, 27 + off, "l", 2)
         s.rect(5 + sw, 28 + off, 6 + sw, 28 + off, "u"); s.rect(10 - sw, 28 + off, 11 - sw, 28 + off, "u")
         s.line(8, 23 + off, 7 + 2 * sw, 30 + off, "t", 2)
         for y in 0...12 { for x in 0..<20 where head[y][x] != nil { s[x, y + off] = head[y][x] } }
@@ -265,9 +285,9 @@ enum PixelCats {
             for y in py...(py + 1) { for x in px...(px + 1) { L[y][x] = "u" } }
             if n % 2 == 0 { L[12][8] = "p" }
             ground = 20 + padTop; legTop = 17 + padTop
-        } else if kind == "climb" || kind == "slide" {
-            L = climbBase(n, slide: kind == "slide")
-            ground = (kind == "slide" ? 29 : 26) + padTop; legTop = 999; wallX = 22 + padSide
+        } else if kind == "climb" || kind == "slide" || kind == "wallscratch" {
+            L = climbBase(n, mode: kind)
+            ground = (kind == "slide" ? 29 : kind == "wallscratch" ? 28 : 26) + padTop; legTop = 999; wallX = 22 + padSide
         } else if kind == "sit" {
             L = frontBase()
             if n == 1 { for y in L.indices { for x in L[y].indices where L[y][x] == "e" { L[y][x] = "k" } } }         // blink
@@ -280,9 +300,9 @@ enum PixelCats {
         }
         var P: LGrid = blank(L[0].count + padSide * 2, L.count + padTop)
         for y in L.indices { for x in L[y].indices { P[y + padTop][x + padSide] = L[y][x] } }
-        let map: [Character: Character] = ["h": "H", "f": "H", "r": "H", "t": "T", "b": "B", "d": "B", "v": "V", "u": "U"]
+        let map: [Character: Character] = ["h": "H", "f": "H", "r": "H", "t": "T", "b": "B", "d": "B", "v": "V", "u": "U", "l": "L"]
         let R: LGrid = P.map { $0.map { c in c.map { map[$0] ?? $0 } } }
-        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit" && kind != "dangle" && kind != "hang" && kind != "groom", cx: P[0].count / 2, wallX: wallX, lying: kind == "sleep" || kind == "loaf", top: top)
+        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit" && kind != "dangle" && kind != "hang" && kind != "groom", cx: (kind == "dangle" || kind == "hang") ? 8 + padSide : P[0].count / 2, wallX: wallX, lying: kind == "sleep" || kind == "loaf", top: top)
         families[key] = f
         return f
     }
@@ -292,14 +312,14 @@ enum PixelCats {
     private static func palette(_ look: CatLook) -> [Character: RGB] {
         let base = RGB(hex: look.baseHex), acc = RGB(hex: look.accentHex), light = base.r + base.g + base.b > 600
         let pink = RGB(hex: 0xE8AAB4)
-        return ["b": base, "t": base, "h": base, "f": base.lt(14), "v": base.lt(14), "d": base.dk(light ? 0.88 : 0.82), "s": acc,
+        return ["b": base, "t": base, "h": base, "l": base, "f": base.lt(14), "v": base.lt(14), "d": base.dk(light ? 0.88 : 0.82), "s": acc,
                 "w": RGB(hex: 0xF4F4F6), "q": acc, "z": RGB(hex: 0x2B2A2F), "p": pink, "u": pink, "r": pink,
                 "e": RGB(hex: look.eyeHexL), "E": RGB(hex: look.eyeHexR), "k": RGB(60, 56, 58)]
     }
 
     private static func coat(_ L: inout LGrid, _ look: CatLook, _ fam: Family) {
         let pat = look.pattern, seed = Int(look.seed % 997), H = L.count, W = L[0].count
-        func isBody(_ c: Character) -> Bool { c == "b" || c == "t" }
+        func isBody(_ c: Character) -> Bool { c == "b" || c == "t" || c == "l" }
         var top = H
         for y in 0..<H { for x in 0..<W { if let c = L[y][x], "hfr".contains(c) { top = min(top, y) } } }
         let tabby = pat == .tabby || pat == .tabbyBicolor, bi = pat == .bicolor || pat == .tabbyBicolor
@@ -448,7 +468,7 @@ enum PixelCats {
         guard let spec = costumes[id] else { return }
         let body = RGB(hex: spec.body), belly = spec.belly.map { RGB(hex: $0) } ?? body
         let paws = spec.paws.map { RGB(hex: $0) }, legs = spec.legs.map { RGB(hex: $0) }
-        paint({ r, _, _ in r == "B" || r == "T" }) { x, y in (legs != nil && y >= fam.legTop) ? legs! : (L[y][x] == "d" ? body.dk(0.84) : body) }
+        paint({ r, _, _ in r == "B" || r == "T" || r == "L" }) { x, y in (legs != nil && y >= fam.legTop) ? legs! : (L[y][x] == "d" ? body.dk(0.84) : body) }
         paint({ r, _, _ in r == "V" }) { _, _ in belly }
         paint({ r, _, _ in r == "U" }) { _, _ in paws ?? legs ?? body }
         let ex = extras[id] ?? Extras()
@@ -728,7 +748,7 @@ enum PixelCats {
         case .walk: return Pick(f: "walk:\(walkK)", eyesOpen: open)
         case .run: return Pick(f: "run:\(walkK)", eyesOpen: open)
         case .stand, .eat: return Pick(f: "walk:1", eyesOpen: open)
-        case .scratch: return Pick(f: "walk:\(paw)", eyesOpen: open)
+        case .scratch: return Pick(f: "scratch:\(Int(t * 7) % 2)", eyesOpen: open)
         case .groom: return Pick(f: "groom:\(Int(t * 3) % 4)", eyesOpen: false)
         case .sit, .purr, .swat, .grumpy:
             return Pick(f: "sit:\(sitK)", eyesOpen: true)
@@ -742,8 +762,8 @@ enum PixelCats {
         case .hiss: return Pick(f: "hiss:\(Int(t * 8) % 2)", shake: CGFloat(sin(t * 40)))
         // the wall is on the cat's right in the sprite; on a left wall it is mirrored
         case .climb: return Pick(f: "climb:\(walkK)", eyesOpen: open, flip: ri.climbSide > 0, wall: true)
-        case .slide: return Pick(f: "slide:0", flip: ri.climbSide > 0, wall: true)
-        case .wallScratch: return Pick(f: "climb:\(paw)", eyesOpen: open)
+        case .slide: return Pick(f: "slide:\(Int(t * 9) % 2)", flip: ri.climbSide > 0, wall: true)
+        case .wallScratch: return Pick(f: "wallscratch:\(Int(t * 7) % 2)", eyesOpen: open)
         case .traverse: return Pick(f: "walk:\(walkK)", rot: 2, eyesOpen: open)
         case .dangle: return Pick(f: "dangle:\(Int(t * 2.5) % 2)")
         case .hangSide, .hangBack:

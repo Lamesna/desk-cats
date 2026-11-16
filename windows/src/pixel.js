@@ -103,6 +103,16 @@
       headAt(g, 14, hy, 12, 'e');
       const tip = by - 2 - (f % 2);                                     // the tail streams out behind
       Ln(g, 4, by, 1, tip, 't', 2); Ln(g, 1, tip, 0, tip - 2, 't', 2);
+    } else if (kind === 'scratch') {
+      // sharpening the claws on the floor: rump up, chest down, front legs stretched far forward, raking in turn
+      const st = k % 2;
+      Ln(g, 6, 9, 7, 18, 'd', 2); S(g, 7, 19, 'd'); S(g, 8, 19, 'd');
+      Ln(g, 15, 15, 25 - st * 3, 18, 'd', 2); S(g, 25 - st * 3, 19, 'd'); S(g, 26 - st * 3, 19, 'd');
+      E(g, 8, 9, 5.5, 3.2, 'b'); E(g, 4, 7, 3.2, 3, 'b'); E(g, 13, 13, 4, 2.6, 'b'); E(g, 10, 11.5, 4.2, 1.2, 'v');
+      Ln(g, 3, 9, 3, 18, 'b', 2); S(g, 3, 19, 'u'); S(g, 4, 19, 'u');
+      headAt(g, 11, 8, 12, 'e');
+      Ln(g, 16, 15, 22 + st * 3, 18, 'b', 2); S(g, 22 + st * 3, 19, 'u'); S(g, 23 + st * 3, 19, 'u');
+      Ln(g, 2, 6, 1, 2, 't', 2); Ln(g, 1, 2, 2 + st, 0, 't', 2);
     } else if (kind === 'stalk' || kind === 'wiggle') {
       // hunting: low to the ground, head forward, tail straight back; the wiggle lifts the rump in turn
       const st = k % 2;
@@ -133,17 +143,31 @@
     return g;
   }
 
-  // A cat on a window side, head up, belly and paws against the wall on the right (x = 22).
-  // slide: sliding down with the front claws dug in above the head.
-  function climbBase(k, slide) {
-    const g = mk(24, 32), st = k % 2 === 0 ? 1 : -1, bob = slide ? 0 : k % 2, sw = Math.floor(k / 2) % 2;
-    const frontNear = slide ? 1 : 5 - 2 * st, frontFar = slide ? 2 : 6 + 2 * st;
-    const hindNear = slide ? 28 : 25 + st, hindFar = slide ? 27 : 25 - st;
+  // A cat against a wall on its right (x = 22), head up, belly towards the wall.
+  // mode 'climb': going up, paws taking turns; 'slide': skidding down, front claws dug in high above the head
+  // and dragging in turn, hind paws braced; 'wallscratch': standing on the hind legs, front paws raking the wall.
+  function climbBase(k, mode) {
+    const g = mk(24, 32), st = k % 2 === 0 ? 1 : -1, sw = Math.floor(k / 2) % 2;
     const paw = (y, c) => R(g, 20, y, 21, y + 1, c);
+    if (mode === 'wallscratch') {
+      const near = st > 0 ? 3 : 8, far = st > 0 ? 8 : 3;
+      Ln(g, 17, 12, 19, far, 'd', 2); paw(far, 'd');
+      Ln(g, 13, 22, 13, 26, 'd', 2); R(g, 12, 27, 13, 28, 'd');
+      E(g, 14, 16, 4.2, 7, 'b'); E(g, 16.4, 16, 1.5, 5, 'v');
+      Ln(g, 11, 22, 8, 26, 't', 2); Ln(g, 8, 26, 5, 27, 't', 2);
+      Ln(g, 16, 12, 19, near, 'b', 2); paw(near, 'u');
+      E(g, 15, 21, 2.6, 2.8, 'b');
+      Ln(g, 16, 22, 17, 26, 'b', 2); R(g, 17, 27, 18, 28, 'u');
+      headAt(g, 7, 3, 11, 'e');
+      return g;
+    }
+    const slide = mode === 'slide', bob = slide ? 0 : k % 2;
+    const frontNear = slide ? (st > 0 ? 0 : 3) : 5 - 2 * st, frontFar = slide ? (st > 0 ? 3 : 0) : 6 + 2 * st;
+    const hindNear = slide ? (st > 0 ? 28 : 26) : 25 + st, hindFar = slide ? (st > 0 ? 26 : 28) : 25 - st;
     Ln(g, 17, 12 + bob, 19, frontFar, 'd', 2); paw(frontFar, 'd');
     Ln(g, 14, 23 + bob, 19, hindFar, 'd', 2); paw(hindFar, 'd');
     E(g, 14, 17 + bob, 4.2, 7, 'b'); E(g, 16.4, 17 + bob, 1.5, 5, 'v');
-    Ln(g, 12, 23 + bob, 10, 27, 't', 2); Ln(g, 10, 27, 9 + sw, 30, 't', 2);
+    Ln(g, 12, 23 + bob, 10, 27, 't', 2); Ln(g, 10, 27, slide ? 8 + (k % 2) * 3 : 9 + sw, 30, 't', 2);
     Ln(g, 16, 12 + bob, 19, frontNear, 'b', 2); paw(frontNear, 'u');
     E(g, 15, 22 + bob, 2.6, 2.8, 'b');
     Ln(g, 16, 23 + bob, 19, hindNear, 'b', 2); paw(hindNear, 'u');
@@ -151,14 +175,15 @@
     return g;
   }
 
+
   // Held up: arms false is a cat picked up by the scruff (legs and tail dangling), true is a cat hanging
   // from the laser dot with both front paws stretched up over its head.
   function hangBase(k, arms) {
     const g = mk(20, 37), off = arms ? 4 : 0, sw = k % 2, head = frontBase();
     E(g, 8, 18 + off, 3.6, 5.5, 'b'); E(g, 8, 18.5 + off, 1.8, 4, 'v');
-    if (arms) { Ln(g, 4, 14 + off, 5, 1, 'b', 2); Ln(g, 11, 14 + off, 10, 1, 'b', 2); R(g, 5, 0, 6, 1, 'u'); R(g, 9, 0, 10, 1, 'u'); }
-    else { Ln(g, 4, 14, 4 - sw, 20, 'b', 2); Ln(g, 11, 14, 12 + sw, 20, 'b', 2); R(g, 4 - sw, 21, 5 - sw, 21, 'u'); R(g, 12 + sw, 21, 13 + sw, 21, 'u'); }
-    Ln(g, 5, 22 + off, 5 + sw, 27 + off, 'b', 2); Ln(g, 10, 22 + off, 10 - sw, 27 + off, 'b', 2);
+    if (arms) { Ln(g, 4, 14 + off, 5, 1, 'l', 2); Ln(g, 11, 14 + off, 10, 1, 'l', 2); R(g, 5, 0, 6, 1, 'u'); R(g, 9, 0, 10, 1, 'u'); }
+    else { Ln(g, 4, 14, 4 - sw, 20, 'l', 2); Ln(g, 11, 14, 12 + sw, 20, 'l', 2); R(g, 4 - sw, 21, 5 - sw, 21, 'u'); R(g, 12 + sw, 21, 13 + sw, 21, 'u'); }
+    Ln(g, 5, 22 + off, 5 + sw, 27 + off, 'l', 2); Ln(g, 10, 22 + off, 10 - sw, 27 + off, 'l', 2);
     R(g, 5 + sw, 28 + off, 6 + sw, 28 + off, 'u'); R(g, 10 - sw, 28 + off, 11 - sw, 28 + off, 'u');
     Ln(g, 8, 23 + off, 7 + 2 * sw, 30 + off, 't', 2);
     for (let y = 0; y <= 12; y++) for (let x = 0; x < 20; x++) if (head[y][x]) g[y + off][x] = head[y][x];
@@ -187,7 +212,7 @@
       for (let y = py; y <= py + 1; y++) for (let x = px; x <= px + 1; x++) L[y][x] = 'u';
       if (n % 2 === 0) L[12][8] = 'p';
       ground = 20 + PAD_TOP; legTop = 17 + PAD_TOP;
-    } else if (kind === 'climb' || kind === 'slide') { L = climbBase(n, kind === 'slide'); ground = (kind === 'slide' ? 29 : 26) + PAD_TOP; legTop = 999; wallX = 22 + PAD_SIDE; }
+    } else if (kind === 'climb' || kind === 'slide' || kind === 'wallscratch') { L = climbBase(n, kind); ground = (kind === 'slide' ? 29 : kind === 'wallscratch' ? 28 : 26) + PAD_TOP; legTop = 999; wallX = 22 + PAD_SIDE; }
     else if (kind === 'sit') {
       L = frontBase();
       if (n === 1) for (const r of L) r.forEach((c, x) => { if (c === 'e') r[x] = 'k'; });                       // blink
@@ -197,22 +222,22 @@
     } else if (kind === 'walk' || kind === 'hiss') { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = 15 + PAD_TOP; }
     else { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = kind === 'run' ? 14 + PAD_TOP : 999; }
     L = pad(L);
-    const Rg = L.map((row) => row.map((c) => ({ h: 'H', f: 'H', r: 'H', t: 'T', b: 'B', d: 'B', v: 'V', u: 'U' })[c] || c));
-    return (FAM[key] = { L, R: Rg, ground, legTop, side: !['sit', 'dangle', 'hang', 'groom'].includes(kind), cx: Math.floor(L[0].length / 2), wallX, lying: kind === 'sleep' || kind === 'loaf', top });
+    const Rg = L.map((row) => row.map((c) => ({ h: 'H', f: 'H', r: 'H', t: 'T', b: 'B', d: 'B', v: 'V', u: 'U', l: 'L' })[c] || c));
+    return (FAM[key] = { L, R: Rg, ground, legTop, side: !['sit', 'dangle', 'hang', 'groom'].includes(kind), cx: (kind === 'dangle' || kind === 'hang') ? 8 + PAD_SIDE : Math.floor(L[0].length / 2), wallX, lying: kind === 'sleep' || kind === 'loaf', top });
   }
 
   // ---------- palette and coat patterns ----------
   function palette(look) {
     const base = hex(look.baseHex), acc = hex(look.accentHex), light = base.reduce((a, b) => a + b, 0) > 600;
     return {
-      b: base, t: base, h: base, f: lt(base, 14), v: lt(base, 14), d: dk(base, light ? 0.88 : 0.82), s: acc, w: hex(0xF4F4F6),
+      b: base, t: base, h: base, l: base, f: lt(base, 14), v: lt(base, 14), d: dk(base, light ? 0.88 : 0.82), s: acc, w: hex(0xF4F4F6),
       q: acc, z: hex(0x2B2A2F), p: hex(0xE8AAB4), u: hex(0xE8AAB4), r: hex(0xE8AAB4), e: nums(look.eyeL), E: nums(look.eyeR), k: [60, 56, 58],
     };
   }
 
   function coat(L, Rg, look, fam) {
     const pat = look.pattern, seed = look.seed % 997, H = L.length, W = L[0].length;
-    const isBody = (c) => c === 'b' || c === 't';
+    const isBody = (c) => c === 'b' || c === 't' || c === 'l';
     let top = H; L.forEach((row, y) => row.forEach((c) => { if (c && 'hfr'.includes(c)) top = Math.min(top, y); }));
     const tabby = pat === 'tabby' || pat === 'tabbyBicolor', bi = pat === 'bicolor' || pat === 'tabbyBicolor' || pat === 'colorpoint';
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -321,7 +346,7 @@
     }
     const spec = K.costumes[id]; if (!spec) return;
     const body = hex(spec.body), belly = spec.belly ? hex(spec.belly) : body, paws = spec.paws ? hex(spec.paws) : null, legs = spec.legs ? hex(spec.legs) : null;
-    paint((r) => r === 'B' || r === 'T', (x, y) => (legs && y >= fam.legTop ? legs : (L[y][x] === 'd' ? dk(body, 0.84) : body)));
+    paint((r) => r === 'B' || r === 'T' || r === 'L', (x, y) => (legs && y >= fam.legTop ? legs : (L[y][x] === 'd' ? dk(body, 0.84) : body)));
     paint((r) => r === 'V', () => belly);
     if (paws) paint((r) => r === 'U', () => paws); else paint((r) => r === 'U', () => (legs || body));
     const ex = EXTRAS[id] || {};
@@ -499,7 +524,7 @@
       case 'walk': return { f: 'walk:' + walkK, rot: 0, eyes };
       case 'run': return { f: 'run:' + walkK, rot: 0, eyes };
       case 'stand': case 'eat': return { f: 'walk:1', rot: 0, eyes };
-      case 'scratch': return { f: 'walk:' + (Math.floor(t * 6) % 2 ? 0 : 2), rot: 0, eyes };
+      case 'scratch': return { f: 'scratch:' + (Math.floor(t * 7) % 2), rot: 0, eyes };
       case 'groom': return { f: 'groom:' + (Math.floor(t * 3) % 4), rot: 0, eyes: 'closed' };
       case 'sit': case 'purr': case 'swat': case 'grumpy': return { f: 'sit:' + sitK, rot: 0, eyes: 'open' };
       case 'loaf': return { f: 'loaf:' + (Math.floor(t * 1.3) % 2), rot: 0, eyes: 'open' };
@@ -512,8 +537,8 @@
       case 'hiss': return { f: 'hiss:' + (Math.floor(t * 8) % 2), rot: 0, eyes: 'open', shake: Math.sin(t * 40) };
       // the wall is on the cat's right in the sprite; on a left wall it is mirrored
       case 'climb': return { f: 'climb:' + walkK, rot: 0, eyes, flip: ri.climbSide > 0, wall: true };
-      case 'slide': return { f: 'slide:0', rot: 0, eyes: 'open', flip: ri.climbSide > 0, wall: true };
-      case 'wallScratch': return { f: 'climb:' + (Math.floor(t * 6) % 2 ? 0 : 2), rot: 0, eyes };
+      case 'slide': return { f: 'slide:' + (Math.floor(t * 9) % 2), rot: 0, eyes: 'open', flip: ri.climbSide > 0, wall: true };
+      case 'wallScratch': return { f: 'wallscratch:' + (Math.floor(t * 7) % 2), rot: 0, eyes };
       case 'traverse': return { f: 'walk:' + walkK, rot: 2, eyes };
       case 'dangle': return { f: 'dangle:' + (Math.floor(t * 2.5) % 2), rot: 0, eyes: 'open' };
       case 'hangSide': case 'hangBack': {
