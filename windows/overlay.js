@@ -6,7 +6,6 @@
   const api = window.kotiki;
   const cv = document.getElementById('c');
   const ctx = cv.getContext('2d');
-  const gc = new K.G(ctx);
 
   let world = null, W = 0, H = 0, dpr = 1;
   let cursor = { x: 0, y: 0 };            // world coordinates, from the main process
@@ -30,7 +29,6 @@
 
   function applyState(s) {
     K.lang = s.lang;
-    K.pixelMode = !!s.pixel;
     setup(s.display);
     world.running = s.running;
     world.laser = s.laser;
@@ -82,7 +80,7 @@
     if (world.placing) K.drawBowl(ctx, { kind: world.placing, x: cursor.x, y: cursor.y - 1, amount: 1 }, H, 0.6);
     // the cat hanging with its back to you goes in front of the others
     const cats = [...world.cats.values()].sort((a, b) => (a.state === 'hang' && a.hangSlot === 2 ? 1 : 0) - (b.state === 'hang' && b.hangSlot === 2 ? 1 : 0));
-    for (const c of cats) K.drawCat(ctx, gc, c, world.renderInfo(c), H, now);
+    for (const c of cats) K.drawCat(ctx, c, world.renderInfo(c), H, now);
     if (world.laser) K.drawLaser(ctx, cursor, H, now);
   }
   requestAnimationFrame(frame);

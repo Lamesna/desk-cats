@@ -1,7 +1,7 @@
 // Headless simulation of the cats' behavior (no screen needed). Run: node test/sim.js
 const path = require('path');
 globalThis.Path2D = class { addPath() {} moveTo() {} lineTo() {} closePath() {} arc() {} ellipse() {} quadraticCurveTo() {} bezierCurveTo() {} rect() {} roundRect() {} };
-for (const f of ['loc', 'model', 'render-core', 'costumes', 'world', 'world-brain', 'world-play']) require(path.join('..', 'src', f + '.js'));
+for (const f of ['loc', 'model', 'catalog', 'world', 'world-brain', 'world-play']) require(path.join('..', 'src', f + '.js'));
 const K = globalThis.K;
 let failures = 0;
 const check = (name, ok, extra) => { console.log((ok ? 'PASS ' : 'FAIL ') + name + (extra ? '  ' + extra : '')); if (!ok) failures++; };

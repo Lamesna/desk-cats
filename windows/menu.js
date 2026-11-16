@@ -19,22 +19,8 @@
   };
   const send = (type, data) => api.send('action', Object.assign({ type }, data || {}));
 
-  /** A cat picture on a small canvas, drawn by the same renderer as the overlay. */
-  function thumb(cfg, size) {
-    if (K.pixelMode && K.pixel) return K.pixel.thumb(cfg, size);
-    const dpr = window.devicePixelRatio || 1;
-    const cv = document.createElement('canvas');
-    cv.width = cv.height = Math.round(size * dpr);
-    cv.style.width = cv.style.height = size + 'px';
-    const ctx = cv.getContext('2d');
-    ctx.scale(dpr, dpr);
-    const s = size / 64;
-    ctx.translate(size / 2, size - 6 * s);
-    ctx.scale(s, -s);
-    const ri = { pose: 'sit', facing: 1, phase: 0, t: 0.6, eyes: 'open', look: { x: 0, y: 0 }, mouthOpen: false, climbSide: -1, rotation: 0, shake: 0, blush: false, swing: 0, progress: 0 };
-    K.draw(new K.G(ctx), K.makeLook(cfg), ri);
-    return cv;
-  }
+  /** A cat picture for the menu: the sitting pixel cat. */
+  const thumb = (cfg, size) => K.pixel.thumb(cfg, size);
 
   const sw = (on, onclick) => h('div', { class: 'switch' + (on ? ' on' : ''), onclick });
 
@@ -71,7 +57,6 @@
         } }, '＋  ' + tr('Add a cat')),
         h('hr'),
         h('div', { class: 'row' }, h('span', { class: 'grow' }, '🔴  ' + tr('Laser pointer instead of cursor')), sw(state.laser, () => send('laser', { value: !state.laser }))),
-        h('div', { class: 'row', style: 'margin-top:8px' }, h('span', { class: 'grow' }, '👾  ' + tr('Pixel cats')), sw(state.pixel, () => send('pixel', { value: !state.pixel }))),
         h('h2', {}, tr('Care')),
         h('div', { class: 'grid2' },
           careButton('Food bowl', '🍽', () => send('placing', { kind: 'food' })),
@@ -136,7 +121,6 @@
   function render() {
     if (!state) return;
     K.lang = state.lang;
-    K.pixelMode = !!state.pixel;
     const cat = editingId && state.cats.find((c) => c.id === editingId);
     if (editingId && !cat) editingId = null;
     // keep the scroll position and the focused input while the state refreshes

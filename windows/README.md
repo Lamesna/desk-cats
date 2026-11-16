@@ -2,11 +2,11 @@
 
 The Windows version of Kotiki, a separate port of the macOS app built with Electron. See the [main README](../README.md) for what the cats do. Requires Windows 10 or 11, 64-bit.
 
-Download `Kotiki-0.2.1-Windows-x64.zip` from the [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.2.1), unzip it and run `Kotiki.exe`.
+Download `Kotiki-0.3.0-Windows-x64.zip` from the [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.3.0), unzip it and run `Kotiki.exe`.
 
 ## Pixel cats
 
-The menu has a "Pixel cats" switch. It turns every cat, coat, hat and costume into pixel art (one look or the other, never both). The pixel cat is drawn from a hand-made sprite plus recolors, so all 18 coats, 31 hats and 25 costumes work. Poses are shared between sprites: sitting, walking, running, jumping, sleeping, hissing, and climbing (the side view turned upright).
+The cats are pixel art, built from one hand-made sprite plus recolours, so all 18 coats, 31 hats and 25 costumes work. Poses: sitting, walking, galloping, jumping, sleeping, hissing, and climbing or sliding down window sides.
 
 ## Good to know
 
@@ -46,7 +46,7 @@ This downloads the official Electron build for Windows, checks its SHA-256 check
 | `main.js` | Tray icon, menu window, overlay window, saved settings |
 | `winlist.js` | Lists open windows through the Win32 API (koffi) |
 | `overlay.js`, `menu.js` | The transparent cat canvas and the menu |
-| `src/render-*.js`, `src/costumes.js`, `src/hoods.js` | Cat drawing, coats, hats and costumes |
+| `src/catalog.js` | Coat colours, the costume table, hat and costume lists |
 | `src/pixel.js` | Pixel renderer: sprites, coats, hats, costumes |
 | `src/world*.js` | Platforms, physics and cat behavior |
 | `src/loc.js` | English, Russian and Chinese text |

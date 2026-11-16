@@ -120,9 +120,6 @@ final class AppState: ObservableObject {
     @Published var cats: [CatConfig] = [] { didSet { if cats != oldValue { save(); onCatsChanged?() } } }
     @Published var running = true { didSet { if running != oldValue { onRunningChanged?() } } }
     @Published var laser = false
-    @Published var pixel = UserDefaults.standard.bool(forKey: "kotiki.pixel") {
-        didSet { UserDefaults.standard.set(pixel, forKey: "kotiki.pixel") }
-    }
     @Published var placing: BowlKind? = nil
     @Published var stats: [UUID: CatStats] = [:]
     @Published var bowlCount = 0

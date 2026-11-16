@@ -5,9 +5,9 @@ struct CatThumb: View {
     let cfg: CatConfig
     var size: CGFloat = 44
     var body: some View {
-        Image(nsImage: AppState.shared.pixel ? PixelCats.image(cfg, size: size * 2) : CatRenderer.image(cfg, size: size * 2))
+        Image(nsImage: PixelCats.image(cfg, size: size * 2))
             .resizable()
-            .interpolation(AppState.shared.pixel ? .none : .high)
+            .interpolation(.none)
             .frame(width: size, height: size)
     }
 }
@@ -90,11 +90,6 @@ struct MenuView: View {
 
                 Toggle(isOn: $state.laser) {
                     Label(tr("Laser pointer instead of cursor"), systemImage: "light.max")
-                }
-                .toggleStyle(.switch)
-
-                Toggle(isOn: $state.pixel) {
-                    Label(tr("Pixel cats"), systemImage: "square.grid.3x3.fill")
                 }
                 .toggleStyle(.switch)
 

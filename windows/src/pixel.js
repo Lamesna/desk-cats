@@ -469,5 +469,4 @@
   }
 
   K.pixel = { drawCat, thumb, sprite, pick, cell };
-  K.pixelMode = false;
 })(globalThis.K = globalThis.K || {});
