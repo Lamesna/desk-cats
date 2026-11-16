@@ -1,7 +1,7 @@
 {
   "name": "kotiki",
   "productName": "Kotiki",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Desktop cats for Windows: they climb your windows, chase the cursor and wear costumes.",
   "main": "main.js",
   "license": "MIT",

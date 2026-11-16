@@ -86,6 +86,23 @@
       const sw = k % 2;
       const tp = kind === 'hiss' ? [[4, 11], [2, 8], [2, 3], [3, 0]] : [[4, 11 + bob], [2, 10 + bob], [1 + sw, 7], [1 + sw, 4 + sw]];
       for (let i = 0; i < tp.length - 1; i++) Ln(g, tp[i][0], tp[i][1], tp[i + 1][0], tp[i + 1][1], 't', kind === 'hiss' ? 3 : 2);
+    } else if (kind === 'run') {
+      // gallop: 0 stretched out in the air, 1 front paws land, 2 legs gathered under, 3 hind legs push off
+      const f = k % 4, by = [9, 10, 11, 10][f], hy = [2, 3, 4, 3][f];
+      // far front, far hind, near front, near hind: [from x, from y, to x, to y]
+      const legs = [
+        [[15, 11, 22, 15], [7, 11, 1, 15], [16, 10, 23, 14], [6, 10, 0, 14]],
+        [[14, 12, 13, 18], [7, 12, 2, 15], [16, 12, 18, 18], [6, 11, 1, 14]],
+        [[14, 13, 10, 18], [8, 13, 12, 18], [15, 13, 12, 18], [7, 13, 10, 18]],
+        [[15, 12, 20, 15], [8, 13, 6, 18], [16, 11, 22, 14], [7, 13, 4, 18]],
+      ][f];
+      const leg = ([x0, y0, x1, y1], c) => { Ln(g, x0, y0, x1, y1, c, 2); const paw = c === 'd' ? 'd' : 'u'; S(g, x1, y1 + 1, paw); S(g, x1 + 1, y1 + 1, paw); };
+      leg(legs[0], 'd'); leg(legs[1], 'd');
+      E(g, 11, by, f === 2 ? 6.6 : 8, f === 2 ? 4 : 3.4, 'b'); E(g, 11, by + 2, 5, 1.4, 'v');
+      leg(legs[2], 'b'); leg(legs[3], 'b');
+      headAt(g, 14, hy, 12, 'e');
+      const tip = by - 2 - (f % 2);                                     // the tail streams out behind
+      Ln(g, 4, by, 1, tip, 't', 2); Ln(g, 1, tip, 0, tip - 2, 't', 2);
     } else if (kind === 'sleep' || kind === 'loaf') {
       const b = k % 2, open = kind === 'loaf';
       E(g, 12, 16 - b * 0.5, 9.4, 3.6 + b * 0.5, 'b'); E(g, 12, 18, 7, 1.5, 'v');
@@ -140,7 +157,7 @@
       if (n === 3) { for (let y = 1; y <= 4; y++) for (let x = 10; x <= 15; x++) if (L[y][x] && L[y + 1][x] === null) { L[y + 1][x] = L[y][x]; L[y][x] = null; } }
       ground = 20 + PAD_TOP; legTop = 17 + PAD_TOP;
     } else if (kind === 'walk' || kind === 'hiss') { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = 15 + PAD_TOP; }
-    else { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = 999; }
+    else { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = kind === 'run' ? 14 + PAD_TOP : 999; }
     L = pad(L);
     const Rg = L.map((row) => row.map((c) => ({ h: 'H', f: 'H', r: 'H', t: 'T', b: 'B', d: 'B', v: 'V', u: 'U' })[c] || c));
     return (FAM[key] = { L, R: Rg, ground, legTop, side: kind !== 'sit', cx: Math.floor(L[0].length / 2), wallX });
@@ -404,7 +421,7 @@
     const sitK = (() => { const m = t % 6; if (m > 5.8) return 1; if (m > 3.2 && m < 3.5) return 2; if (m > 4.4 && m < 4.6) return 3; return 0; })();
     switch (ri.pose) {
       case 'walk': return { f: 'walk:' + walkK, rot: 0, eyes };
-      case 'run': return { f: Math.floor(Math.abs(ri.phase) / Math.PI) % 2 ? 'jump:0' : 'jump:1', rot: 0, eyes };
+      case 'run': return { f: 'run:' + walkK, rot: 0, eyes };
       case 'stand': case 'eat': return { f: 'walk:1', rot: 0, eyes };
       case 'scratch': return { f: 'walk:' + (Math.floor(t * 6) % 2 ? 0 : 2), rot: 0, eyes };
       case 'sit': case 'purr': case 'groom': case 'swat': case 'grumpy': return { f: 'sit:' + sitK, rot: 0, eyes: ri.eyes === 'closed' && ri.pose !== 'groom' && sitK !== 1 ? 'open' : eyes };

@@ -7,8 +7,9 @@ const poses = ['sit', 'walk', 'walk2', 'run', 'loaf', 'sleep', 'jump', 'hiss', '
 if (mode === 'coats') K.coatPresets.forEach((p) => poses.forEach((pose, i) => items.push({ coat: p.id, pose, ph: i === 2 ? 1.6 : 0.3 })));
 if (mode === 'costumes') K.outfitOptions.filter((o) => o.id !== 'none').forEach((o) => ['sit', 'walk', 'sleep', 'jump'].forEach((pose) => items.push({ coat: 'grayWhite', outfit: o.id, pose, ph: 0.3 })));
 if (mode === 'moves') [['grayWhite','none','none'],['ginger','spider','c_spider'],['calico','dino','c_dino'],['black','none','cape']].forEach(([coat,hat,outfit]) => { [0,1,2,3].forEach((k) => items.push({ coat, hat, outfit, pose: 'climb', ph: k * Math.PI / 2 + 0.1, side: -1 })); items.push({ coat, hat, outfit, pose: 'slide', ph: 0, side: 1 }); items.push({ coat, hat, outfit, pose: 'climb', ph: 0.1, side: 1 }); items.push({ coat, hat, outfit, pose: 'sit', ph: 0 }); items.push({ coat, hat, outfit, pose: 'walk', ph: 0.3 }); });
+if (mode === 'run') [['grayWhite','none','none'],['ginger','none','c_dino'],['calico','spider','c_spider'],['black','witch','cape']].forEach(([coat,hat,outfit]) => [0,1,2,3].forEach((k) => items.push({ coat, hat, outfit, pose: 'run', ph: k * Math.PI / 2 + 0.1 })));
 if (mode === 'hats') { const coats = ['grayWhite', 'ginger', 'black', 'white', 'calico', 'siamese', 'brownTabby', 'blue']; K.hatOptions.filter((o) => o.id !== 'none').forEach((o, i) => { ['sit', 'walk'].forEach((pose) => items.push({ coat: coats[i % 8], hat: o.id, pose, ph: 0.3 })); }); }
-const cols = mode === 'coats' ? 9 : mode === 'costumes' ? 8 : 8, cw = 96, ch = 100;
+const cols = mode === 'coats' ? 9 : mode === 'run' ? 4 : 8, cw = 96, ch = 100;
 const rows = Math.ceil(items.length / cols), cv = document.getElementById('c'); cv.width = cols * cw; cv.height = rows * ch;
 const ctx = cv.getContext('2d'); ctx.fillStyle = '#bdbdbd'; ctx.fillRect(0, 0, cv.width, cv.height);
 items.forEach((it, i) => {

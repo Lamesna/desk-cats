@@ -143,6 +143,28 @@ enum PixelCats {
             let sw = k % 2
             let tp: [(Int, Int)] = kind == "hiss" ? [(4, 11), (2, 8), (2, 3), (3, 0)] : [(4, 11 + bob), (2, 10 + bob), (1 + sw, 7), (1 + sw, 4 + sw)]
             for i in 0..<(tp.count - 1) { s.line(tp[i].0, tp[i].1, tp[i + 1].0, tp[i + 1].1, "t", kind == "hiss" ? 3 : 2) }
+        } else if kind == "run" {
+            // gallop: 0 stretched out in the air, 1 front paws land, 2 legs gathered under, 3 hind legs push off
+            let f = k % 4, by = [9, 10, 11, 10][f], hy = [2, 3, 4, 3][f]
+            // far front, far hind, near front, near hind: (from x, from y, to x, to y)
+            let legs: [[(Int, Int, Int, Int)]] = [
+                [(15, 11, 22, 15), (7, 11, 1, 15), (16, 10, 23, 14), (6, 10, 0, 14)],
+                [(14, 12, 13, 18), (7, 12, 2, 15), (16, 12, 18, 18), (6, 11, 1, 14)],
+                [(14, 13, 10, 18), (8, 13, 12, 18), (15, 13, 12, 18), (7, 13, 10, 18)],
+                [(15, 12, 20, 15), (8, 13, 6, 18), (16, 11, 22, 14), (7, 13, 4, 18)],
+            ]
+            func leg(_ l: (Int, Int, Int, Int), _ c: Character) {
+                s.line(l.0, l.1, l.2, l.3, c, 2)
+                let paw: Character = c == "d" ? "d" : "u"
+                s[l.2, l.3 + 1] = paw; s[l.2 + 1, l.3 + 1] = paw
+            }
+            leg(legs[f][0], "d"); leg(legs[f][1], "d")
+            s.ell(11, Double(by), f == 2 ? 6.6 : 8, f == 2 ? 4 : 3.4, "b"); s.ell(11, Double(by + 2), 5, 1.4, "v")
+            leg(legs[f][2], "b"); leg(legs[f][3], "b")
+            headAt(&s, 14, hy, 12, "e")
+            // the tail streams out behind
+            let tip = by - 2 - (f % 2)
+            s.line(4, by, 1, tip, "t", 2); s.line(1, tip, 0, tip - 2, "t", 2)
         } else if kind == "sleep" || kind == "loaf" {
             let b = Double(k % 2), open = kind == "loaf"
             s.ell(12, 16 - b * 0.5, 9.4, 3.6 + b * 0.5, "b"); s.ell(12, 18, 7, 1.5, "v")
@@ -207,7 +229,7 @@ enum PixelCats {
             ground = 20 + padTop; legTop = 17 + padTop
         } else {
             L = sideBase(kind, n); ground = 19 + padTop
-            legTop = (kind == "walk" || kind == "hiss") ? 15 + padTop : 999
+            legTop = (kind == "walk" || kind == "hiss") ? 15 + padTop : kind == "run" ? 14 + padTop : 999
         }
         var P: LGrid = blank(L[0].count + padSide * 2, L.count + padTop)
         for y in L.indices { for x in L[y].indices { P[y + padTop][x + padSide] = L[y][x] } }
@@ -607,7 +629,7 @@ enum PixelCats {
         let paw = Int(t * 6) % 2 == 1 ? 0 : 2
         switch ri.pose {
         case .walk: return Pick(f: "walk:\(walkK)", eyesOpen: open)
-        case .run: return Pick(f: Int(abs(ri.phase) / .pi) % 2 == 1 ? "jump:0" : "jump:1", eyesOpen: open)
+        case .run: return Pick(f: "run:\(walkK)", eyesOpen: open)
         case .stand, .eat: return Pick(f: "walk:1", eyesOpen: open)
         case .scratch: return Pick(f: "walk:\(paw)", eyesOpen: open)
         case .sit, .purr, .groom, .swat, .grumpy:
