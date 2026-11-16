@@ -56,7 +56,7 @@
     ['bow', 'Bow'], ['spider', 'Spider mask'], ['horns', 'Horned helm'], ['winged', 'Winged helm'],
   ].concat(K.hoodHats).map(([id, name]) => ({ id, name }));
   K.outfitOptions = [
-    ['none', 'No costume'], ['cape', 'Hero cape'], ['bowtie', 'Bow tie'], ['shield', 'Star shield'], ['reactor', 'Glowing reactor'],
+    ['none', 'No costume'], ['cape', 'Hero cape'], ['bowtie', 'Bow tie'], ['wings', 'Fairy wings'], ['reactor', 'Glowing reactor'],
   ].concat(K.costumeOrder.map((id) => [id, K.costumes[id].name])).map(([id, name]) => ({ id, name }));
   K.hatIds = new Set(K.hatOptions.map((o) => o.id));
   K.outfitIds = new Set(K.outfitOptions.map((o) => o.id));

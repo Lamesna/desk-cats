@@ -87,7 +87,7 @@ private let ruStrings: [String: String] = [
     "Pink dino": "Розовый дино", "Vampire": "Вампир", "Santa": "Дед Мороз", "Top hat": "Цилиндр",
     "Star helmet": "Шлем со звездой", "Iron helmet": "Железный шлем",
     // costumes
-    "No costume": "Без костюма", "Hero cape": "Плащ героя", "Bow tie": "Бабочка", "Star shield": "Щит со звездой",
+    "No costume": "Без костюма", "Hero cape": "Плащ героя", "Bow tie": "Бабочка", "Fairy wings": "Крылья феи",
     "Glowing reactor": "Сияющий реактор", "Overalls": "Комбинезон", "Bow jumpsuit": "Комбез с бантиком", "Wizard": "Волшебник",
     "Froggy": "Лягушонок", "Mercenary": "Наёмник", "Spider": "Паук", "Royal robe": "Королевская мантия", "Party": "Праздничный",
     "Trickster": "Трикстер", "Jester": "Шут",
@@ -138,7 +138,7 @@ private let zhStrings: [String: String] = [
     "Pink dino": "粉色恐龙", "Vampire": "吸血鬼", "Santa": "圣诞老人", "Top hat": "礼帽",
     "Star helmet": "星星头盔", "Iron helmet": "铁头盔",
     // costumes
-    "No costume": "无服装", "Hero cape": "英雄披风", "Bow tie": "领结", "Star shield": "星星盾牌",
+    "No costume": "无服装", "Hero cape": "英雄披风", "Bow tie": "领结", "Fairy wings": "仙女翅膀",
     "Glowing reactor": "发光反应堆", "Overalls": "背带裤", "Bow jumpsuit": "蝴蝶结连体衣", "Wizard": "巫师",
     "Froggy": "小青蛙", "Mercenary": "佣兵", "Spider": "蜘蛛", "Royal robe": "王袍", "Party": "派对装",
     "Trickster": "诡计之神", "Jester": "小丑",

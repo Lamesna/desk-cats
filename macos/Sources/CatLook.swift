@@ -106,5 +106,5 @@ let hatOptions: [(id: String, name: String)] = [
 ] + hoodHats
 let outfitOptions: [(id: String, name: String)] = [
     ("none", "No costume"), ("cape", "Hero cape"), ("bowtie", "Bow tie"),
-    ("shield", "Star shield"), ("reactor", "Glowing reactor"),
+    ("wings", "Fairy wings"), ("reactor", "Glowing reactor"),
 ] + costumeOrder.map { ($0, costumes[$0]!.name) }

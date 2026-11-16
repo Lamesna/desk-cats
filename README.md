@@ -20,14 +20,14 @@ The cats are pixel art: small sprites with crisp edges that sit, walk, gallop, c
 
 | Platform | Folder | Status | Download |
 |---|---|---|---|
-| **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 2.0 | [Latest release](https://github.com/MiLana-ec/desk-cats/releases/latest), file `Kotiki-2.0-macOS.zip` |
-| **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.3.0 | [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.3.0), file `Kotiki-0.3.0-Windows-x64.zip` |
+| **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 2.1 | [Latest release](https://github.com/MiLana-ec/desk-cats/releases/latest), file `Kotiki-2.1-macOS.zip` |
+| **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.3.1 | [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.3.1), file `Kotiki-0.3.1-Windows-x64.zip` |
 
 The macOS app is native Swift. The Windows app is a separate port built with Electron. Both draw the same pixel cats and share the same costumes and behavior, but the code is independent.
 
 ### macOS
 
-1. Download `Kotiki-2.0-macOS.zip` from the latest release, unzip it and drag `Kotiki.app` into Applications.
+1. Download `Kotiki-2.1-macOS.zip` from the latest release, unzip it and drag `Kotiki.app` into Applications.
 2. On first launch macOS says it cannot verify the developer, because the app has no Apple certificate. Open System Settings, Privacy & Security, scroll down and click "Open Anyway". On macOS 14 and older, right-click the app and choose Open.
 3. The cat icon in the menu bar opens your cat list, bowls, laser pointer and outfits. Hold Option and drag to pick up a cat.
 
@@ -35,7 +35,7 @@ Details and build instructions: [`macos/README.md`](macos/README.md).
 
 ### Windows (beta)
 
-1. Download `Kotiki-0.3.0-Windows-x64.zip` from the Windows release and unzip it anywhere.
+1. Download `Kotiki-0.3.1-Windows-x64.zip` from the Windows release and unzip it anywhere.
 2. Double-click `Kotiki.exe`. If Windows shows "Windows protected your PC", click "More info", then "Run anyway" (the app is not signed).
 3. The cat icon sits in the notification area at the right of the taskbar (click the ^ arrow if it is hidden). Hold Ctrl and drag to pick up a cat.
 

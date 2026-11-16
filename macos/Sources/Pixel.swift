@@ -211,14 +211,26 @@ enum PixelCats {
         return s.g
     }
 
-    private struct Family { let L: LGrid; let R: LGrid; let ground: Int; let legTop: Int; let side: Bool; let cx: Int; var wallX: Int? = nil }
+    private struct Family { let L: LGrid; let R: LGrid; let ground: Int; let legTop: Int; let side: Bool; let cx: Int; var wallX: Int? = nil; var lying = false }
     private static var families: [String: Family] = [:]
 
     private static func family(_ key: String) -> Family {
         if let f = families[key] { return f }
         let parts = key.split(separator: ":"), kind = String(parts[0]), n = Int(parts.count > 1 ? parts[1] : "0") ?? 0
         var L: LGrid, ground: Int, legTop: Int, wallX: Int? = nil
-        if kind == "climb" || kind == "slide" {
+        if kind == "groom" {
+            // washing: eyes shut, one front paw comes up to lick it (with the tongue out), then rubs the cheek and over the eye
+            L = frontBase()
+            for y in L.indices { for x in L[y].indices where L[y][x] == "e" { L[y][x] = "k" } }
+            let (px, py) = [(6, 11), (4, 8), (6, 11), (5, 10)][n % 4]
+            // a dark line around the raised leg so it reads against the chest and face
+            for y in (py - 1)...15 { for x in [px - 1, px + 2] where L[y][x] != nil { L[y][x] = "k" } }
+            for x in px...(px + 1) where L[py - 1][x] != nil { L[py - 1][x] = "k" }
+            for y in (py + 2)...15 { for x in px...(px + 1) { L[y][x] = "b" } }
+            for y in py...(py + 1) { for x in px...(px + 1) { L[y][x] = "u" } }
+            if n % 2 == 0 { L[12][8] = "p" }
+            ground = 20 + padTop; legTop = 17 + padTop
+        } else if kind == "climb" || kind == "slide" {
             L = climbBase(n, slide: kind == "slide")
             ground = (kind == "slide" ? 29 : 26) + padTop; legTop = 999; wallX = 22 + padSide
         } else if kind == "sit" {
@@ -235,7 +247,7 @@ enum PixelCats {
         for y in L.indices { for x in L[y].indices { P[y + padTop][x + padSide] = L[y][x] } }
         let map: [Character: Character] = ["h": "H", "f": "H", "r": "H", "t": "T", "b": "B", "d": "B", "v": "V", "u": "U"]
         let R: LGrid = P.map { $0.map { c in c.map { map[$0] ?? $0 } } }
-        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit", cx: P[0].count / 2, wallX: wallX)
+        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit", cx: P[0].count / 2, wallX: wallX, lying: kind == "sleep" || kind == "loaf")
         families[key] = f
         return f
     }
@@ -355,8 +367,47 @@ enum PixelCats {
             let cx = fam.side ? bb.x1 - 1 : mx, cy = fam.side ? bb.y0 + 2 : bb.y0
             for d in [-2, -1, 1, 2] { set(cx + d, cy, RGB(hex: 0xD7262F)); set(cx + d, cy + 1, RGB(hex: 0xD7262F)) }
             set(cx, cy, RGB(hex: 0x8E1B1B)); set(cx, cy + 1, RGB(hex: 0x8E1B1B)); return
-        case "shield": box(mx - 1, my - 1, mx + 1, my + 1, RGB(hex: 0x2F5DAE)); set(mx, my, RGB(hex: 0xF4F2EE)); return
-        case "reactor": box(mx - 1, my - 1, mx + 1, my + 1, RGB(hex: 0x9FE8FF)); set(mx, my, RGB(hex: 0xFFFFFF)); return
+        case "wings":
+            // fairy wings behind the cat: a big upper wing and a small lower one, pale with a lilac rim and a sparkle
+            let fill = col2(0xF7DDF7), rim = col2(0xC59BE6), glint = col2(0xFFFFFF)
+            func wing(_ cx: Double, _ cy: Double, _ rx: Double, _ ry: Double) {
+                func inside(_ x: Int, _ y: Int) -> Bool { let dx = (Double(x) - cx) / rx, dy = (Double(y) - cy) / ry; return dx * dx + dy * dy <= 1 }
+                for y in Int((cy - ry).rounded(.down))...Int((cy + ry).rounded(.up)) {
+                    for x in Int((cx - rx).rounded(.down))...Int((cx + rx).rounded(.up)) where inside(x, y) && y >= 0 && y < H && x >= 0 && x < W && C[y][x] == nil {
+                        let edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)
+                        set(x, y, edge ? rim : fill)
+                    }
+                }
+                let gx = Int(cx.rounded()), gy = Int((cy - ry / 3).rounded())
+                if gy >= 0 && gy < H && gx >= 0 && gx < W && C[gy][gx] == fill { set(gx, gy, glint) }
+            }
+            if fam.wallX != nil {
+                // on a wall the back faces away from it
+                wing(Double(bb.x0) - 2, Double(bb.y0) + 4, 2.6, 3.8); wing(Double(bb.x0) - 1, Double(bb.y0) + 9.5, 1.7, 2.2)
+            } else if fam.lying {
+                // lying down: the wings stand up from the shoulder blades, next to the head
+                let sx = Double(bb.x0) + Double(bb.x1 - bb.x0) * 0.72, sy = Double(bb.y0)
+                wing(sx - 1, sy - 4, 2.6, 3.6); wing(sx - 3.5, sy - 1, 1.8, 1.8)
+            } else if fam.side {
+                let sx = Double(bb.x0) + Double(bb.x1 - bb.x0) * 0.55, sy = Double(bb.y0)
+                wing(sx - 2, sy - 3.5, 3.6, 3); wing(sx - 5, sy - 0.5, 2.4, 1.8)
+            } else {
+                let y0 = Double(bb.y0)
+                for (x, d) in [(Double(bb.x0), -1.0), (Double(bb.x1), 1.0)] { wing(x + d * 3, y0 + 1, 2.8, 3.4); wing(x + d * 2, y0 + 5.5, 1.8, 1.9) }
+            }
+            return
+        case "reactor":
+            if fam.lying { return }                                   // lying on its chest: the reactor is underneath
+            // on the chest: high on the front for a sitting cat; the front of the body, under the neck, side on
+            var cx = mx, cy = bb.y0 + 2
+            if fam.side {
+                let midY = (bb.y0 + bb.y1) / 2
+                let rows = fam.wallX != nil ? (bb.y0 + 2)...max(bb.y0 + 2, midY) : max(bb.y0, midY - 1)...max(bb.y0, bb.y1 - 1)
+                var best = (-1, 0)
+                for y in rows { for x in 0..<W where (R[y][x] == "B" || R[y][x] == "V") && C[y][x] != nil && x > best.0 { best = (x, y) } }
+                if best.0 >= 0 { cx = best.0 - (fam.wallX != nil ? 1 : 2); cy = best.1 }
+            }
+            box(cx - 1, cy - 1, cx + 1, cy + 1, RGB(hex: 0x9FE8FF)); set(cx, cy, RGB(hex: 0xFFFFFF)); return
         default: break
         }
         guard let spec = costumes[id] else { return }
@@ -622,7 +673,7 @@ enum PixelCats {
         func q(_ a: CGFloat) -> Int { Int((a / (.pi / 2)).rounded()) }
         let t = ri.t
         let open: Bool
-        switch ri.eyes { case .open, .wide, .angry: open = true; default: open = false }
+        switch ri.eyes { case .open, .wide, .angry, .sleepy: open = true; default: open = false }   // a tired cat still has its eyes open
         let walkK = Int(abs(ri.phase) / (.pi / 2)) % 4
         let m = t.truncatingRemainder(dividingBy: 6)
         let sitK = m > 5.8 ? 1 : (m > 3.2 && m < 3.5) ? 2 : (m > 4.4 && m < 4.6) ? 3 : 0
@@ -632,8 +683,9 @@ enum PixelCats {
         case .run: return Pick(f: "run:\(walkK)", eyesOpen: open)
         case .stand, .eat: return Pick(f: "walk:1", eyesOpen: open)
         case .scratch: return Pick(f: "walk:\(paw)", eyesOpen: open)
-        case .sit, .purr, .groom, .swat, .grumpy:
-            return Pick(f: "sit:\(sitK)", eyesOpen: ri.pose == .groom ? open : true)
+        case .groom: return Pick(f: "groom:\(Int(t * 3) % 4)", eyesOpen: false)
+        case .sit, .purr, .swat, .grumpy:
+            return Pick(f: "sit:\(sitK)", eyesOpen: true)
         case .loaf: return Pick(f: "loaf:\(Int(t * 1.3) % 2)")
         case .sleep: return Pick(f: "sleep:\(Int(t * 1.1) % 2)")
         case .crouch, .stalk, .wiggle:
