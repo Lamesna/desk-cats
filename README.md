@@ -8,6 +8,8 @@ Clicks pass straight through the cats, so you keep working as usual. You can fee
 
 The cats are pixel art: small sprites with crisp edges that sit, walk, gallop, climb window sides, sleep and hiss.
 
+📣 **Follow the news here:** [t.me/kotiki_mestosa](https://t.me/kotiki_mestosa)
+
 ![Pixel cats in all 18 coats](docs/pixel-coats.png)
 
 ![Pixel cats in hats](docs/pixel-hats.png)
