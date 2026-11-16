@@ -127,11 +127,11 @@ enum PixelCats {
             let ph = Double(k) * .pi / 2, A = kind == "hiss" ? 0.0 : 2
             func up(_ a: Double) -> Int { cos(a) > 0.5 ? 1 : 0 }
             func off(_ a: Double) -> Int { Int((A * sin(a)).rounded()) }
-            let legs: [(Int, Int, Character)] = [(5 + off(ph), up(ph), "b"), (8 + off(ph + .pi), up(ph + .pi), "d"),
-                                                 (12 + off(ph), up(ph), "d"), (15 + off(ph + .pi), up(ph + .pi), "b")]
+            let legs: [(Int, Int, Character)] = [(5 + off(ph), up(ph), "l"), (8 + off(ph + .pi), up(ph + .pi), "m"),
+                                                 (12 + off(ph), up(ph), "m"), (15 + off(ph + .pi), up(ph + .pi), "l")]
             func leg(_ l: (Int, Int, Character)) {
                 s.rect(l.0, 14 + bob, l.0 + 1, 19 - l.1, l.2)
-                let paw: Character = l.2 == "d" ? "d" : "u"
+                let paw: Character = l.2 == "m" ? "m" : "u"
                 s[l.0, 19 - l.1] = paw; s[l.0 + 1, 19 - l.1] = paw
             }
             leg(legs[1]); leg(legs[2])
@@ -155,12 +155,12 @@ enum PixelCats {
             ]
             func leg(_ l: (Int, Int, Int, Int), _ c: Character) {
                 s.line(l.0, l.1, l.2, l.3, c, 2)
-                let paw: Character = c == "d" ? "d" : "u"
+                let paw: Character = c == "m" ? "m" : "u"
                 s[l.2, l.3 + 1] = paw; s[l.2 + 1, l.3 + 1] = paw
             }
-            leg(legs[f][0], "d"); leg(legs[f][1], "d")
+            leg(legs[f][0], "m"); leg(legs[f][1], "m")
             s.ell(11, Double(by), f == 2 ? 6.6 : 8, f == 2 ? 4 : 3.4, "b"); s.ell(11, Double(by + 2), 5, 1.4, "v")
-            leg(legs[f][2], "b"); leg(legs[f][3], "b")
+            leg(legs[f][2], "l"); leg(legs[f][3], "l")
             headAt(&s, 14, hy, 12, "e")
             // the tail streams out behind
             let tip = by - 2 - (f % 2)
@@ -168,20 +168,20 @@ enum PixelCats {
         } else if kind == "scratch" {
             // sharpening the claws on the floor: rump up, chest down, front legs stretched far forward, raking in turn
             let st = k % 2
-            s.line(6, 9, 7, 18, "d", 2); s[7, 19] = "d"; s[8, 19] = "d"
-            s.line(15, 15, 25 - st * 3, 18, "d", 2); s[25 - st * 3, 19] = "d"; s[26 - st * 3, 19] = "d"
+            s.line(6, 9, 7, 18, "m", 2); s[7, 19] = "m"; s[8, 19] = "m"
+            s.line(15, 15, 25 - st * 3, 18, "m", 2); s[25 - st * 3, 19] = "m"; s[26 - st * 3, 19] = "m"
             s.ell(8, 9, 5.5, 3.2, "b"); s.ell(4, 7, 3.2, 3, "b"); s.ell(13, 13, 4, 2.6, "b"); s.ell(10, 11.5, 4.2, 1.2, "v")
-            s.line(3, 9, 3, 18, "b", 2); s[3, 19] = "u"; s[4, 19] = "u"
+            s.line(3, 9, 3, 18, "l", 2); s[3, 19] = "u"; s[4, 19] = "u"
             headAt(&s, 11, 8, 12, "e")
-            s.line(16, 15, 22 + st * 3, 18, "b", 2); s[22 + st * 3, 19] = "u"; s[23 + st * 3, 19] = "u"
+            s.line(16, 15, 22 + st * 3, 18, "l", 2); s[22 + st * 3, 19] = "u"; s[23 + st * 3, 19] = "u"
             s.line(2, 6, 1, 2, "t", 2); s.line(1, 2, 2 + st, 0, "t", 2)
         } else if kind == "stalk" || kind == "wiggle" {
             // hunting: low to the ground, head forward, tail straight back; the wiggle lifts the rump in turn
             let st = k % 2
-            for x in [8 + st, 13 - st] { s.rect(x, 16, x + 1, 19, "d") }
+            for x in [8 + st, 13 - st] { s.rect(x, 16, x + 1, 19, "m") }
             s.ell(11, 15, 7.6, 2.8, "b"); s.ell(11, 16.6, 5, 1, "v")
             if kind == "wiggle" { s.ell(5, 13 - Double(st), 3, 2.4, "b") }
-            for x in [5 - st, 16 + st] { s.rect(x, 16, x + 1, 19, "b"); s[x, 19] = "u"; s[x + 1, 19] = "u" }
+            for x in [5 - st, 16 + st] { s.rect(x, 16, x + 1, 19, "l"); s[x, 19] = "u"; s[x + 1, 19] = "u" }
             headAt(&s, 14, 7, 12, "e")
             s.line(4, 14, 0, 13 - st, "t", 2)
         } else if kind == "sleep" || kind == "loaf" {
@@ -196,8 +196,8 @@ enum PixelCats {
         } else if kind == "jump" {
             let u = k % 2
             s.ell(11, 9 + Double(u), 8, 3.4, "b"); s.ell(11, 11 + Double(u), 6, 1.5, "v")
-            s.line(16, 11 + u, 21, 14 + u, "b", 2); s.line(13, 12 + u, 18, 15 + u, "d", 2)
-            s.line(5, 10 + u, 1, 14 + u, "b", 2); s.line(8, 11 + u, 4, 15 + u, "d", 2)
+            s.line(16, 11 + u, 21, 14 + u, "l", 2); s.line(13, 12 + u, 18, 15 + u, "m", 2)
+            s.line(5, 10 + u, 1, 14 + u, "l", 2); s.line(8, 11 + u, 4, 15 + u, "m", 2)
             s[21, 15 + u] = "u"; s[22, 15 + u] = "u"; s[1, 15 + u] = "u"
             headAt(&s, 14, 1 + u, 12, "e")
             s.line(4, 8 + u, 2, 5 + u, "t", 2); s.line(2, 5 + u, 3, 2 + u, "t", 2)
@@ -212,15 +212,28 @@ enum PixelCats {
         var s = Sheet(24, 32)
         let st = k % 2 == 0 ? 1 : -1, sw = (k / 2) % 2
         func paw(_ y: Int, _ c: Character) { s.rect(20, y, 21, y + 1, c) }
-        if mode == "wallscratch" {
-            let near = st > 0 ? 3 : 8, far = st > 0 ? 8 : 3
-            s.line(17, 12, 19, far, "d", 2); paw(far, "d")
-            s.line(13, 22, 13, 26, "d", 2); s.rect(12, 27, 13, 28, "d")
+        if mode == "box" {
+            // boxing: up on the hind legs, front paws punching forward in turn
+            let near = st > 0 ? 9 : 13, far = st > 0 ? 13 : 9
+            s.line(17, 12, 21, far, "m", 2); s.rect(22, far, 23, far + 1, "m")
+            s.line(13, 22, 13, 26, "m", 2); s.rect(12, 27, 13, 28, "m")
             s.ell(14, 16, 4.2, 7, "b"); s.ell(16.4, 16, 1.5, 5, "v")
             s.line(11, 22, 8, 26, "t", 2); s.line(8, 26, 5, 27, "t", 2)
-            s.line(16, 12, 19, near, "b", 2); paw(near, "u")
+            s.line(16, 12, 20, near, "l", 2); s.rect(21, near, 22, near + 1, "u")
             s.ell(15, 21, 2.6, 2.8, "b")
-            s.line(16, 22, 17, 26, "b", 2); s.rect(17, 27, 18, 28, "u")
+            s.line(16, 22, 17, 26, "l", 2); s.rect(17, 27, 18, 28, "u")
+            headAt(&s, 8, 3, 11, "e")
+            return s.g
+        }
+        if mode == "wallscratch" {
+            let near = st > 0 ? 3 : 8, far = st > 0 ? 8 : 3
+            s.line(17, 12, 19, far, "m", 2); paw(far, "m")
+            s.line(13, 22, 13, 26, "m", 2); s.rect(12, 27, 13, 28, "m")
+            s.ell(14, 16, 4.2, 7, "b"); s.ell(16.4, 16, 1.5, 5, "v")
+            s.line(11, 22, 8, 26, "t", 2); s.line(8, 26, 5, 27, "t", 2)
+            s.line(16, 12, 19, near, "l", 2); paw(near, "u")
+            s.ell(15, 21, 2.6, 2.8, "b")
+            s.line(16, 22, 17, 26, "l", 2); s.rect(17, 27, 18, 28, "u")
             headAt(&s, 7, 3, 11, "e")
             return s.g
         }
@@ -229,13 +242,13 @@ enum PixelCats {
         // sliding: the claws catch and let go one after the other, the hind paws scrabble against the wall
         let frontNear = slide ? (st > 0 ? 0 : 3) : 5 - 2 * st, frontFar = slide ? (st > 0 ? 3 : 0) : 6 + 2 * st
         let hindNear = slide ? (st > 0 ? 28 : 26) : 25 + st, hindFar = slide ? (st > 0 ? 26 : 28) : 25 - st
-        s.line(17, 12 + bob, 19, frontFar, "d", 2); paw(frontFar, "d")
-        s.line(14, 23 + bob, 19, hindFar, "d", 2); paw(hindFar, "d")
+        s.line(17, 12 + bob, 19, frontFar, "m", 2); paw(frontFar, "m")
+        s.line(14, 23 + bob, 19, hindFar, "m", 2); paw(hindFar, "m")
         s.ell(14, 17 + Double(bob), 4.2, 7, "b"); s.ell(16.4, 17 + Double(bob), 1.5, 5, "v")
         s.line(12, 23 + bob, 10, 27, "t", 2); s.line(10, 27, slide ? 8 + (k % 2) * 3 : 9 + sw, 30, "t", 2)
-        s.line(16, 12 + bob, 19, frontNear, "b", 2); paw(frontNear, "u")
+        s.line(16, 12 + bob, 19, frontNear, "l", 2); paw(frontNear, "u")
         s.ell(15, 22 + Double(bob), 2.6, 2.8, "b")
-        s.line(16, 23 + bob, 19, hindNear, "b", 2); paw(hindNear, "u")
+        s.line(16, 23 + bob, 19, hindNear, "l", 2); paw(hindNear, "u")
         headAt(&s, 7, 3 + bob, 11, "e")
         return s.g
     }
@@ -260,6 +273,35 @@ enum PixelCats {
         return s.g
     }
 
+    /// A cartoon fight: a ball of dust with paws, a tail and an ear poking out, and stars above.
+    /// Both cats in a fight draw one, so together they make one big brawl.
+    private static func brawlBase(_ k: Int) -> LGrid {
+        var s = Sheet(34, 27)
+        let f = k % 4
+        let allPaws: [[(Int, Int, Int, Int)]] = [[(25, 12, 31, 9), (12, 19, 9, 24)], [(24, 16, 31, 19), (18, 19, 22, 24)],
+                                                [(9, 10, 2, 7), (15, 20, 14, 25)], [(20, 6, 23, 0), (24, 18, 30, 22)]]
+        let paws = allPaws[f]
+        let tails: [[(Int, Int)]] = [[(8, 16), (1, 13), (0, 9)], [(22, 7), (26, 1), (29, 0)], [(25, 17), (32, 20), (33, 24)], [(10, 18), (4, 23), (1, 25)]]
+        let ears = [(15, 0), (9, 2), (19, 0), (12, 1)]
+        for p in paws { s.line(p.0, p.1, p.2, p.3, "l", 2); s.rect(p.2, p.3, p.2 + 1, p.3 + 1, "u") }
+        let tp = tails[f]
+        for i in 0..<(tp.count - 1) { s.line(tp[i].0, tp[i].1, tp[i + 1].0, tp[i + 1].1, "t", 2) }
+        let (ex, ey) = ears[f]
+        s.rect(ex, ey + 1, ex + 3, ey + 3, "h"); s.rect(ex + 1, ey, ex + 2, ey, "h"); s[ex + 1, ey + 2] = "r"; s[ex + 2, ey + 2] = "r"
+        // the dust boils: the lobes shift a little every frame
+        let j = [0, 1, 0, -1][f]
+        for (cx, cy, rx, ry) in [(17.0, 13.0, 10.0, 7.0), (10.0 + Double(j), 11.0, 5.5, 5.0), (24.0 - Double(j), 11.0, 5.5, 5.0),
+                                 (12.0, 17.0 + Double(j), 6.0, 4.0), (22.0, 17.0 - Double(j), 6.0, 4.0), (17.0 + Double(j), 8.0, 5.0, 4.0)] {
+            s.ell(cx, cy, rx, ry, "c")
+        }
+        for y in 17..<27 { for x in 0..<34 where s[x, y] == "c" { s[x, y] = "C" } }
+        // stars and sparks
+        let allStars: [[(Int, Int)]] = [[(5, 3), (28, 5)], [(27, 2), (6, 6)], [(4, 5), (30, 3)], [(29, 6), (7, 2)]]
+        let stars = allStars[f]
+        for (x, y) in stars { s[x, y] = "y"; s[x - 1, y] = "y"; s[x + 1, y] = "y"; s[x, y - 1] = "y"; s[x, y + 1] = "y" }
+        return s.g
+    }
+
     private struct Family { let L: LGrid; let R: LGrid; let ground: Int; let legTop: Int; let side: Bool; let cx: Int; var wallX: Int? = nil; var lying = false; var top: Int? = nil }
     private static var families: [String: Family] = [:]
 
@@ -268,7 +310,9 @@ enum PixelCats {
         let parts = key.split(separator: ":"), kind = String(parts[0]), n = Int(parts.count > 1 ? parts[1] : "0") ?? 0
         var L: LGrid, ground: Int, legTop: Int, wallX: Int? = nil
         var top: Int? = nil
-        if kind == "dangle" || kind == "hang" {
+        if kind == "brawl" {
+            L = brawlBase(n); ground = 23 + padTop; legTop = 999
+        } else if kind == "dangle" || kind == "hang" {
             let arms = kind == "hang"
             L = hangBase(n, arms: arms)
             ground = (arms ? 34 : 30) + padTop; legTop = (arms ? 26 : 22) + padTop
@@ -285,6 +329,8 @@ enum PixelCats {
             for y in py...(py + 1) { for x in px...(px + 1) { L[y][x] = "u" } }
             if n % 2 == 0 { L[12][8] = "p" }
             ground = 20 + padTop; legTop = 17 + padTop
+        } else if kind == "box" {
+            L = climbBase(n, mode: "box"); ground = 28 + padTop; legTop = 999
         } else if kind == "climb" || kind == "slide" || kind == "wallscratch" {
             L = climbBase(n, mode: kind)
             ground = (kind == "slide" ? 29 : kind == "wallscratch" ? 28 : 26) + padTop; legTop = 999; wallX = 22 + padSide
@@ -300,9 +346,9 @@ enum PixelCats {
         }
         var P: LGrid = blank(L[0].count + padSide * 2, L.count + padTop)
         for y in L.indices { for x in L[y].indices { P[y + padTop][x + padSide] = L[y][x] } }
-        let map: [Character: Character] = ["h": "H", "f": "H", "r": "H", "t": "T", "b": "B", "d": "B", "v": "V", "u": "U", "l": "L"]
+        let map: [Character: Character] = ["h": "H", "f": "H", "r": "H", "t": "T", "b": "B", "d": "B", "v": "V", "u": "U", "l": "L", "m": "L"]
         let R: LGrid = P.map { $0.map { c in c.map { map[$0] ?? $0 } } }
-        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit" && kind != "dangle" && kind != "hang" && kind != "groom", cx: (kind == "dangle" || kind == "hang") ? 8 + padSide : P[0].count / 2, wallX: wallX, lying: kind == "sleep" || kind == "loaf", top: top)
+        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit" && kind != "dangle" && kind != "hang" && kind != "groom", cx: (kind == "dangle" || kind == "hang") ? 8 + padSide : kind == "brawl" ? 17 + padSide : kind == "box" ? 14 + padSide : P[0].count / 2, wallX: wallX, lying: kind == "sleep" || kind == "loaf", top: top)
         families[key] = f
         return f
     }
@@ -312,14 +358,15 @@ enum PixelCats {
     private static func palette(_ look: CatLook) -> [Character: RGB] {
         let base = RGB(hex: look.baseHex), acc = RGB(hex: look.accentHex), light = base.r + base.g + base.b > 600
         let pink = RGB(hex: 0xE8AAB4)
-        return ["b": base, "t": base, "h": base, "l": base, "f": base.lt(14), "v": base.lt(14), "d": base.dk(light ? 0.88 : 0.82), "s": acc,
+        return ["b": base, "t": base, "h": base, "l": base, "m": base.dk(light ? 0.88 : 0.82), "f": base.lt(14), "v": base.lt(14), "d": base.dk(light ? 0.88 : 0.82), "s": acc,
                 "w": RGB(hex: 0xF4F4F6), "q": acc, "z": RGB(hex: 0x2B2A2F), "p": pink, "u": pink, "r": pink,
-                "e": RGB(hex: look.eyeHexL), "E": RGB(hex: look.eyeHexR), "k": RGB(60, 56, 58)]
+                "e": RGB(hex: look.eyeHexL), "E": RGB(hex: look.eyeHexR), "k": RGB(60, 56, 58),
+                "c": RGB(226, 226, 228), "C": RGB(196, 196, 202), "y": RGB(240, 192, 44)]
     }
 
     private static func coat(_ L: inout LGrid, _ look: CatLook, _ fam: Family) {
         let pat = look.pattern, seed = Int(look.seed % 997), H = L.count, W = L[0].count
-        func isBody(_ c: Character) -> Bool { c == "b" || c == "t" || c == "l" }
+        func isBody(_ c: Character) -> Bool { c == "b" || c == "t" || c == "l" || c == "m" }
         var top = H
         for y in 0..<H { for x in 0..<W { if let c = L[y][x], "hfr".contains(c) { top = min(top, y) } } }
         let tabby = pat == .tabby || pat == .tabbyBicolor, bi = pat == .bicolor || pat == .tabbyBicolor
@@ -356,7 +403,7 @@ enum PixelCats {
                     guard let c = L[y][x] else { continue }
                     if c == "f" || c == "t" || c == "u" { L[y][x] = "s" }
                     else if c == "h" && y <= top + 2 { L[y][x] = "s" }
-                    else if (c == "b" || c == "d") && y >= fam.ground - 2 { L[y][x] = "s" }
+                    else if (c == "b" || c == "d" || c == "l" || c == "m") && y >= fam.ground - 2 { L[y][x] = "s" }
                 }
             }
         }
@@ -419,7 +466,16 @@ enum PixelCats {
             }
             return
         case "bowtie":
-            let cx = fam.side ? bb.x1 - 1 : mx, cy = fam.side ? bb.y0 + 2 : bb.y0
+            // at the neck: side on, the lowest body cell that touches the head (under the chin)
+            var cx = mx, cy = bb.y0
+            if fam.side {
+                var best: (Int, Int)? = nil
+                for y in 0..<H { for x in 0..<W where (R[y][x] == "B" || R[y][x] == "V") && C[y][x] != nil {
+                    let touches = [(1, 0), (-1, 0), (0, 1), (0, -1)].contains { d in let yy = y + d.1, xx = x + d.0; return yy >= 0 && yy < H && xx >= 0 && xx < W && R[yy][xx] == "H" }
+                    if touches, best == nil || y > best!.1 || (y == best!.1 && x > best!.0) { best = (x, y) }
+                } }
+                if let b = best { cx = b.0 - 1; cy = b.1 - 1 } else { cx = bb.x1 - 1; cy = bb.y0 + 2 }
+            }
             for d in [-2, -1, 1, 2] { set(cx + d, cy, RGB(hex: 0xD7262F)); set(cx + d, cy + 1, RGB(hex: 0xD7262F)) }
             set(cx, cy, RGB(hex: 0x8E1B1B)); set(cx, cy + 1, RGB(hex: 0x8E1B1B)); return
         case "wings":
@@ -468,7 +524,7 @@ enum PixelCats {
         guard let spec = costumes[id] else { return }
         let body = RGB(hex: spec.body), belly = spec.belly.map { RGB(hex: $0) } ?? body
         let paws = spec.paws.map { RGB(hex: $0) }, legs = spec.legs.map { RGB(hex: $0) }
-        paint({ r, _, _ in r == "B" || r == "T" || r == "L" }) { x, y in (legs != nil && y >= fam.legTop) ? legs! : (L[y][x] == "d" ? body.dk(0.84) : body) }
+        paint({ r, _, _ in r == "B" || r == "T" || r == "L" }) { x, y in (legs != nil && y >= fam.legTop) ? legs! : (L[y][x] == "d" || L[y][x] == "m" ? body.dk(0.84) : body) }
         paint({ r, _, _ in r == "V" }) { _, _ in belly }
         paint({ r, _, _ in r == "U" }) { _, _ in paws ?? legs ?? body }
         let ex = extras[id] ?? Extras()
@@ -658,8 +714,9 @@ enum PixelCats {
                 C[y][x] = (c == "e" && !fam.side && x > fam.cx) ? pal["E"] : (pal[c] ?? pal["b"])
             }
         }
-        if look.outfit != "none" { outfit(&C, R, L, fam, look.outfit) }
-        if look.hat != "none" { hat(&C, L, &R, fam, look.hat) }
+        let brawl = fkey.hasPrefix("brawl")
+        if look.outfit != "none" && !brawl { outfit(&C, R, L, fam, look.outfit) }
+        if look.hat != "none" && !brawl { hat(&C, L, &R, fam, look.hat) }
         // outline: dark, tinted by the colour it borders
         var out = C
         let kc = pal["k"]!
@@ -750,7 +807,8 @@ enum PixelCats {
         case .stand, .eat: return Pick(f: "walk:1", eyesOpen: open)
         case .scratch: return Pick(f: "scratch:\(Int(t * 7) % 2)", eyesOpen: open)
         case .groom: return Pick(f: "groom:\(Int(t * 3) % 4)", eyesOpen: false)
-        case .sit, .purr, .swat, .grumpy:
+        case .swat: return Pick(f: "box:\(Int(t * 6) % 2)", eyesOpen: open)
+        case .sit, .purr, .grumpy:
             return Pick(f: "sit:\(sitK)", eyesOpen: true)
         case .loaf: return Pick(f: "loaf:\(Int(t * 1.3) % 2)")
         case .sleep: return Pick(f: "sleep:\(Int(t * 1.1) % 2)")
@@ -770,7 +828,7 @@ enum PixelCats {
             // the body follows the swing; a mirrored sprite leans the other way
             let lean = max(-7, min(7, Int((ri.swing * 12).rounded())))
             return Pick(f: "hang:\(Int(t * 2.5) % 2)", shear: ri.facing < 0 ? -lean : lean)
-        case .roll: return Pick(f: "sit:0", rot: q(ri.rotation))
+        case .roll: return Pick(f: "brawl:\(Int(t * 8) % 4)")
         }
     }
 

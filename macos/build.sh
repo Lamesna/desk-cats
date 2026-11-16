@@ -23,7 +23,7 @@ cat > "$APP/Contents/Info.plist" <<EOF
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundleExecutable</key><string>DeskCats</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>2.3</string>
+  <key>CFBundleShortVersionString</key><string>2.4</string>
   <key>CFBundleVersion</key><string>1</string>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
   <key>CFBundleLocalizations</key><array><string>en</string><string>ru</string><string>zh-Hans</string></array>

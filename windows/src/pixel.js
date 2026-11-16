@@ -74,9 +74,9 @@
     const arch = kind === 'hiss' ? 2 : 0, bob = kind === 'walk' && k % 2 ? -1 : 0;
     if (kind === 'walk' || kind === 'hiss') {
       const ph = k * Math.PI / 2, A = kind === 'hiss' ? 0 : 2, up = (a) => (Math.cos(a) > 0.5 ? 1 : 0);
-      const legs = [[5 + Math.round(A * Math.sin(ph)), up(ph), 'b'], [8 + Math.round(A * Math.sin(ph + Math.PI)), up(ph + Math.PI), 'd'],
-        [12 + Math.round(A * Math.sin(ph)), up(ph), 'd'], [15 + Math.round(A * Math.sin(ph + Math.PI)), up(ph + Math.PI), 'b']];
-      const leg = ([x, lift, ch]) => { R(g, x, 14 + bob, x + 1, 19 - lift, ch); S(g, x, 19 - lift, ch === 'd' ? 'd' : 'u'); S(g, x + 1, 19 - lift, ch === 'd' ? 'd' : 'u'); };
+      const legs = [[5 + Math.round(A * Math.sin(ph)), up(ph), 'l'], [8 + Math.round(A * Math.sin(ph + Math.PI)), up(ph + Math.PI), 'm'],
+        [12 + Math.round(A * Math.sin(ph)), up(ph), 'm'], [15 + Math.round(A * Math.sin(ph + Math.PI)), up(ph + Math.PI), 'l']];
+      const leg = ([x, lift, ch]) => { R(g, x, 14 + bob, x + 1, 19 - lift, ch); S(g, x, 19 - lift, ch === 'm' ? 'm' : 'u'); S(g, x + 1, 19 - lift, ch === 'm' ? 'm' : 'u'); };
       leg(legs[1]); leg(legs[2]);
       E(g, 10, 12 + bob - arch / 2, 7.4, 3.8 + arch * 0.4, 'b'); E(g, 10, 14 + bob, 5.4, 1.6, 'v');
       leg(legs[0]); leg(legs[3]);
@@ -96,30 +96,30 @@
         [[14, 13, 10, 18], [8, 13, 12, 18], [15, 13, 12, 18], [7, 13, 10, 18]],
         [[15, 12, 20, 15], [8, 13, 6, 18], [16, 11, 22, 14], [7, 13, 4, 18]],
       ][f];
-      const leg = ([x0, y0, x1, y1], c) => { Ln(g, x0, y0, x1, y1, c, 2); const paw = c === 'd' ? 'd' : 'u'; S(g, x1, y1 + 1, paw); S(g, x1 + 1, y1 + 1, paw); };
-      leg(legs[0], 'd'); leg(legs[1], 'd');
+      const leg = ([x0, y0, x1, y1], c) => { Ln(g, x0, y0, x1, y1, c, 2); const paw = c === 'm' ? 'm' : 'u'; S(g, x1, y1 + 1, paw); S(g, x1 + 1, y1 + 1, paw); };
+      leg(legs[0], 'm'); leg(legs[1], 'm');
       E(g, 11, by, f === 2 ? 6.6 : 8, f === 2 ? 4 : 3.4, 'b'); E(g, 11, by + 2, 5, 1.4, 'v');
-      leg(legs[2], 'b'); leg(legs[3], 'b');
+      leg(legs[2], 'l'); leg(legs[3], 'l');
       headAt(g, 14, hy, 12, 'e');
       const tip = by - 2 - (f % 2);                                     // the tail streams out behind
       Ln(g, 4, by, 1, tip, 't', 2); Ln(g, 1, tip, 0, tip - 2, 't', 2);
     } else if (kind === 'scratch') {
       // sharpening the claws on the floor: rump up, chest down, front legs stretched far forward, raking in turn
       const st = k % 2;
-      Ln(g, 6, 9, 7, 18, 'd', 2); S(g, 7, 19, 'd'); S(g, 8, 19, 'd');
-      Ln(g, 15, 15, 25 - st * 3, 18, 'd', 2); S(g, 25 - st * 3, 19, 'd'); S(g, 26 - st * 3, 19, 'd');
+      Ln(g, 6, 9, 7, 18, 'm', 2); S(g, 7, 19, 'm'); S(g, 8, 19, 'm');
+      Ln(g, 15, 15, 25 - st * 3, 18, 'm', 2); S(g, 25 - st * 3, 19, 'm'); S(g, 26 - st * 3, 19, 'm');
       E(g, 8, 9, 5.5, 3.2, 'b'); E(g, 4, 7, 3.2, 3, 'b'); E(g, 13, 13, 4, 2.6, 'b'); E(g, 10, 11.5, 4.2, 1.2, 'v');
-      Ln(g, 3, 9, 3, 18, 'b', 2); S(g, 3, 19, 'u'); S(g, 4, 19, 'u');
+      Ln(g, 3, 9, 3, 18, 'l', 2); S(g, 3, 19, 'u'); S(g, 4, 19, 'u');
       headAt(g, 11, 8, 12, 'e');
-      Ln(g, 16, 15, 22 + st * 3, 18, 'b', 2); S(g, 22 + st * 3, 19, 'u'); S(g, 23 + st * 3, 19, 'u');
+      Ln(g, 16, 15, 22 + st * 3, 18, 'l', 2); S(g, 22 + st * 3, 19, 'u'); S(g, 23 + st * 3, 19, 'u');
       Ln(g, 2, 6, 1, 2, 't', 2); Ln(g, 1, 2, 2 + st, 0, 't', 2);
     } else if (kind === 'stalk' || kind === 'wiggle') {
       // hunting: low to the ground, head forward, tail straight back; the wiggle lifts the rump in turn
       const st = k % 2;
-      [8 + st, 13 - st].forEach((x) => R(g, x, 16, x + 1, 19, 'd'));
+      [8 + st, 13 - st].forEach((x) => R(g, x, 16, x + 1, 19, 'm'));
       E(g, 11, 15, 7.6, 2.8, 'b'); E(g, 11, 16.6, 5, 1, 'v');
       if (kind === 'wiggle') E(g, 5, 13 - st, 3, 2.4, 'b');
-      [5 - st, 16 + st].forEach((x) => { R(g, x, 16, x + 1, 19, 'b'); S(g, x, 19, 'u'); S(g, x + 1, 19, 'u'); });
+      [5 - st, 16 + st].forEach((x) => { R(g, x, 16, x + 1, 19, 'l'); S(g, x, 19, 'u'); S(g, x + 1, 19, 'u'); });
       headAt(g, 14, 7, 12, 'e');
       Ln(g, 4, 14, 0, 13 - st, 't', 2);
     } else if (kind === 'sleep' || kind === 'loaf') {
@@ -134,8 +134,8 @@
     } else if (kind === 'jump') {
       const up = k % 2;
       E(g, 11, 9 + up, 8, 3.4, 'b'); E(g, 11, 11 + up, 6, 1.5, 'v');
-      Ln(g, 16, 11 + up, 21, 14 + up, 'b', 2); Ln(g, 13, 12 + up, 18, 15 + up, 'd', 2);
-      Ln(g, 5, 10 + up, 1, 14 + up, 'b', 2); Ln(g, 8, 11 + up, 4, 15 + up, 'd', 2);
+      Ln(g, 16, 11 + up, 21, 14 + up, 'l', 2); Ln(g, 13, 12 + up, 18, 15 + up, 'm', 2);
+      Ln(g, 5, 10 + up, 1, 14 + up, 'l', 2); Ln(g, 8, 11 + up, 4, 15 + up, 'm', 2);
       S(g, 21, 15 + up, 'u'); S(g, 22, 15 + up, 'u'); S(g, 1, 15 + up, 'u');
       headAt(g, 14, 1 + up, 12, 'e');
       Ln(g, 4, 8 + up, 2, 5 + up, 't', 2); Ln(g, 2, 5 + up, 3, 2 + up, 't', 2);
@@ -149,32 +149,62 @@
   function climbBase(k, mode) {
     const g = mk(24, 32), st = k % 2 === 0 ? 1 : -1, sw = Math.floor(k / 2) % 2;
     const paw = (y, c) => R(g, 20, y, 21, y + 1, c);
-    if (mode === 'wallscratch') {
-      const near = st > 0 ? 3 : 8, far = st > 0 ? 8 : 3;
-      Ln(g, 17, 12, 19, far, 'd', 2); paw(far, 'd');
-      Ln(g, 13, 22, 13, 26, 'd', 2); R(g, 12, 27, 13, 28, 'd');
+    if (mode === 'box') {
+      // boxing: up on the hind legs, front paws punching forward in turn
+      const near = st > 0 ? 9 : 13, far = st > 0 ? 13 : 9;
+      Ln(g, 17, 12, 21, far, 'm', 2); R(g, 22, far, 23, far + 1, 'm');
+      Ln(g, 13, 22, 13, 26, 'm', 2); R(g, 12, 27, 13, 28, 'm');
       E(g, 14, 16, 4.2, 7, 'b'); E(g, 16.4, 16, 1.5, 5, 'v');
       Ln(g, 11, 22, 8, 26, 't', 2); Ln(g, 8, 26, 5, 27, 't', 2);
-      Ln(g, 16, 12, 19, near, 'b', 2); paw(near, 'u');
+      Ln(g, 16, 12, 20, near, 'l', 2); R(g, 21, near, 22, near + 1, 'u');
       E(g, 15, 21, 2.6, 2.8, 'b');
-      Ln(g, 16, 22, 17, 26, 'b', 2); R(g, 17, 27, 18, 28, 'u');
+      Ln(g, 16, 22, 17, 26, 'l', 2); R(g, 17, 27, 18, 28, 'u');
+      headAt(g, 8, 3, 11, 'e');
+      return g;
+    }
+    if (mode === 'wallscratch') {
+      const near = st > 0 ? 3 : 8, far = st > 0 ? 8 : 3;
+      Ln(g, 17, 12, 19, far, 'm', 2); paw(far, 'm');
+      Ln(g, 13, 22, 13, 26, 'm', 2); R(g, 12, 27, 13, 28, 'm');
+      E(g, 14, 16, 4.2, 7, 'b'); E(g, 16.4, 16, 1.5, 5, 'v');
+      Ln(g, 11, 22, 8, 26, 't', 2); Ln(g, 8, 26, 5, 27, 't', 2);
+      Ln(g, 16, 12, 19, near, 'l', 2); paw(near, 'u');
+      E(g, 15, 21, 2.6, 2.8, 'b');
+      Ln(g, 16, 22, 17, 26, 'l', 2); R(g, 17, 27, 18, 28, 'u');
       headAt(g, 7, 3, 11, 'e');
       return g;
     }
     const slide = mode === 'slide', bob = slide ? 0 : k % 2;
     const frontNear = slide ? (st > 0 ? 0 : 3) : 5 - 2 * st, frontFar = slide ? (st > 0 ? 3 : 0) : 6 + 2 * st;
     const hindNear = slide ? (st > 0 ? 28 : 26) : 25 + st, hindFar = slide ? (st > 0 ? 26 : 28) : 25 - st;
-    Ln(g, 17, 12 + bob, 19, frontFar, 'd', 2); paw(frontFar, 'd');
-    Ln(g, 14, 23 + bob, 19, hindFar, 'd', 2); paw(hindFar, 'd');
+    Ln(g, 17, 12 + bob, 19, frontFar, 'm', 2); paw(frontFar, 'm');
+    Ln(g, 14, 23 + bob, 19, hindFar, 'm', 2); paw(hindFar, 'm');
     E(g, 14, 17 + bob, 4.2, 7, 'b'); E(g, 16.4, 17 + bob, 1.5, 5, 'v');
     Ln(g, 12, 23 + bob, 10, 27, 't', 2); Ln(g, 10, 27, slide ? 8 + (k % 2) * 3 : 9 + sw, 30, 't', 2);
-    Ln(g, 16, 12 + bob, 19, frontNear, 'b', 2); paw(frontNear, 'u');
+    Ln(g, 16, 12 + bob, 19, frontNear, 'l', 2); paw(frontNear, 'u');
     E(g, 15, 22 + bob, 2.6, 2.8, 'b');
-    Ln(g, 16, 23 + bob, 19, hindNear, 'b', 2); paw(hindNear, 'u');
+    Ln(g, 16, 23 + bob, 19, hindNear, 'l', 2); paw(hindNear, 'u');
     headAt(g, 7, 3 + bob, 11, 'e');
     return g;
   }
 
+
+  // A cartoon fight: a ball of dust with paws, a tail and an ear poking out, and stars above.
+  // Both cats in a fight draw one, so together they make one big brawl.
+  function brawlBase(k) {
+    const g = mk(34, 27), f = k % 4;
+    const paws = [[[25, 12, 31, 9], [12, 19, 9, 24]], [[24, 16, 31, 19], [18, 19, 22, 24]], [[9, 10, 2, 7], [15, 20, 14, 25]], [[20, 6, 23, 0], [24, 18, 30, 22]]][f];
+    const tails = [[[8, 16], [1, 13], [0, 9]], [[22, 7], [26, 1], [29, 0]], [[25, 17], [32, 20], [33, 24]], [[10, 18], [4, 23], [1, 25]]][f];
+    const [ex, ey] = [[15, 0], [9, 2], [19, 0], [12, 1]][f];
+    paws.forEach(([x0, y0, x1, y1]) => { Ln(g, x0, y0, x1, y1, 'l', 2); R(g, x1, y1, x1 + 1, y1 + 1, 'u'); });
+    for (let i = 0; i < tails.length - 1; i++) Ln(g, tails[i][0], tails[i][1], tails[i + 1][0], tails[i + 1][1], 't', 2);
+    R(g, ex, ey + 1, ex + 3, ey + 3, 'h'); R(g, ex + 1, ey, ex + 2, ey, 'h'); S(g, ex + 1, ey + 2, 'r'); S(g, ex + 2, ey + 2, 'r');
+    const j = [0, 1, 0, -1][f];                                                   // the dust boils: the lobes shift every frame
+    [[17, 13, 10, 7], [10 + j, 11, 5.5, 5], [24 - j, 11, 5.5, 5], [12, 17 + j, 6, 4], [22, 17 - j, 6, 4], [17 + j, 8, 5, 4]].forEach(([cx, cy, rx, ry]) => E(g, cx, cy, rx, ry, 'c'));
+    for (let y = 17; y < 27; y++) for (let x = 0; x < 34; x++) if (g[y][x] === 'c') g[y][x] = 'C';
+    [[[5, 3], [28, 5]], [[27, 2], [6, 6]], [[4, 5], [30, 3]], [[29, 6], [7, 2]]][f].forEach(([x, y]) => { [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dx, dy]) => S(g, x + dx, y + dy, 'y')); });
+    return g;
+  }
 
   // Held up: arms false is a cat picked up by the scruff (legs and tail dangling), true is a cat hanging
   // from the laser dot with both front paws stretched up over its head.
@@ -197,7 +227,9 @@
     if (FAM[key]) return FAM[key];
     const [kind, k] = key.split(':'), n = +k || 0;
     let L, ground, legTop, wallX = null, top = null;
-    if (kind === 'dangle' || kind === 'hang') {
+    if (kind === 'brawl') { L = brawlBase(n); ground = 23 + PAD_TOP; legTop = 999; }
+    else if (kind === 'box') { L = climbBase(n, 'box'); ground = 28 + PAD_TOP; legTop = 999; }
+    else if (kind === 'dangle' || kind === 'hang') {
       const arms = kind === 'hang';
       L = hangBase(n, arms); ground = (arms ? 34 : 30) + PAD_TOP; legTop = (arms ? 26 : 22) + PAD_TOP; if (arms) top = PAD_TOP;
     } else if (kind === 'groom') {
@@ -222,22 +254,22 @@
     } else if (kind === 'walk' || kind === 'hiss') { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = 15 + PAD_TOP; }
     else { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = kind === 'run' ? 14 + PAD_TOP : 999; }
     L = pad(L);
-    const Rg = L.map((row) => row.map((c) => ({ h: 'H', f: 'H', r: 'H', t: 'T', b: 'B', d: 'B', v: 'V', u: 'U', l: 'L' })[c] || c));
-    return (FAM[key] = { L, R: Rg, ground, legTop, side: !['sit', 'dangle', 'hang', 'groom'].includes(kind), cx: (kind === 'dangle' || kind === 'hang') ? 8 + PAD_SIDE : Math.floor(L[0].length / 2), wallX, lying: kind === 'sleep' || kind === 'loaf', top });
+    const Rg = L.map((row) => row.map((c) => ({ h: 'H', f: 'H', r: 'H', t: 'T', b: 'B', d: 'B', v: 'V', u: 'U', l: 'L', m: 'L' })[c] || c));
+    return (FAM[key] = { L, R: Rg, ground, legTop, side: !['sit', 'dangle', 'hang', 'groom'].includes(kind), cx: (kind === 'dangle' || kind === 'hang') ? 8 + PAD_SIDE : kind === 'brawl' ? 17 + PAD_SIDE : kind === 'box' ? 14 + PAD_SIDE : Math.floor(L[0].length / 2), wallX, lying: kind === 'sleep' || kind === 'loaf', top });
   }
 
   // ---------- palette and coat patterns ----------
   function palette(look) {
     const base = hex(look.baseHex), acc = hex(look.accentHex), light = base.reduce((a, b) => a + b, 0) > 600;
     return {
-      b: base, t: base, h: base, l: base, f: lt(base, 14), v: lt(base, 14), d: dk(base, light ? 0.88 : 0.82), s: acc, w: hex(0xF4F4F6),
-      q: acc, z: hex(0x2B2A2F), p: hex(0xE8AAB4), u: hex(0xE8AAB4), r: hex(0xE8AAB4), e: nums(look.eyeL), E: nums(look.eyeR), k: [60, 56, 58],
+      b: base, t: base, h: base, l: base, m: dk(base, light ? 0.88 : 0.82), f: lt(base, 14), v: lt(base, 14), d: dk(base, light ? 0.88 : 0.82), s: acc, w: hex(0xF4F4F6),
+      q: acc, z: hex(0x2B2A2F), p: hex(0xE8AAB4), u: hex(0xE8AAB4), r: hex(0xE8AAB4), e: nums(look.eyeL), E: nums(look.eyeR), k: [60, 56, 58], c: [226, 226, 228], C: [196, 196, 202], y: [240, 192, 44],
     };
   }
 
   function coat(L, Rg, look, fam) {
     const pat = look.pattern, seed = look.seed % 997, H = L.length, W = L[0].length;
-    const isBody = (c) => c === 'b' || c === 't' || c === 'l';
+    const isBody = (c) => c === 'b' || c === 't' || c === 'l' || c === 'm';
     let top = H; L.forEach((row, y) => row.forEach((c) => { if (c && 'hfr'.includes(c)) top = Math.min(top, y); }));
     const tabby = pat === 'tabby' || pat === 'tabbyBicolor', bi = pat === 'bicolor' || pat === 'tabbyBicolor' || pat === 'colorpoint';
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -267,7 +299,7 @@
         const c = L[y][x]; if (!c) continue;
         if (c === 'f' || c === 't' || c === 'u' || c === 'r') L[y][x] = c === 'r' ? 'r' : 's';
         else if (c === 'h' && y <= top + 2) L[y][x] = 's';
-        else if ((c === 'b' || c === 'd') && y >= fam.ground - 2) L[y][x] = 's';
+        else if (['b', 'd', 'l', 'm'].includes(c) && y >= fam.ground - 2) L[y][x] = 's';
       }
     }
   }
@@ -311,7 +343,18 @@
       }
       return;
     }
-    if (id === 'bowtie') { const cx = fam.side ? bb.x1 - 1 : Math.round((bb.x0 + bb.x1) / 2), cy = fam.side ? bb.y0 + 2 : bb.y0 - 0; [-2, -1, 1, 2].forEach((d) => { set(cx + d, cy, hex(0xD7262F)); set(cx + d, cy + 1, hex(0xD7262F)); }); set(cx, cy, hex(0x8E1B1B)); set(cx, cy + 1, hex(0x8E1B1B)); return; }
+    if (id === 'bowtie') {
+      // at the neck: side on, the lowest body cell that touches the head (under the chin)
+      let cx = Math.round((bb.x0 + bb.x1) / 2), cy = bb.y0;
+      if (fam.side) {
+        let best = null;
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+          if (!((Rg[y][x] === 'B' || Rg[y][x] === 'V') && C[y][x])) continue;
+          const touches = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => Rg[y + dy] && Rg[y + dy][x + dx] === 'H');
+          if (touches && (!best || y > best[1] || (y === best[1] && x > best[0]))) best = [x, y];
+        }
+        if (best) { cx = best[0] - 1; cy = best[1] - 1; } else { cx = bb.x1 - 1; cy = bb.y0 + 2; }
+      } [-2, -1, 1, 2].forEach((d) => { set(cx + d, cy, hex(0xD7262F)); set(cx + d, cy + 1, hex(0xD7262F)); }); set(cx, cy, hex(0x8E1B1B)); set(cx, cy + 1, hex(0x8E1B1B)); return; }
     if (id === 'wings') {
       // fairy wings behind the cat: a big upper wing and a small lower one, pale with a lilac rim and a sparkle
       const fill = hex(0xF7DDF7), rim = hex(0xC59BE6), glint = hex(0xFFFFFF);
@@ -346,7 +389,7 @@
     }
     const spec = K.costumes[id]; if (!spec) return;
     const body = hex(spec.body), belly = spec.belly ? hex(spec.belly) : body, paws = spec.paws ? hex(spec.paws) : null, legs = spec.legs ? hex(spec.legs) : null;
-    paint((r) => r === 'B' || r === 'T' || r === 'L', (x, y) => (legs && y >= fam.legTop ? legs : (L[y][x] === 'd' ? dk(body, 0.84) : body)));
+    paint((r) => r === 'B' || r === 'T' || r === 'L', (x, y) => (legs && y >= fam.legTop ? legs : (L[y][x] === 'd' || L[y][x] === 'm' ? dk(body, 0.84) : body)));
     paint((r) => r === 'V', () => belly);
     if (paws) paint((r) => r === 'U', () => paws); else paint((r) => r === 'U', () => (legs || body));
     const ex = EXTRAS[id] || {};
@@ -468,8 +511,9 @@
     const C = mk(W, H);
     const midX = fam.cx;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const c = L[y][x]; if (!c) continue; C[y][x] = c === 'e' && !fam.side && x > midX ? pal.E : (pal[c] || pal.b); }
-    if (look.outfit && look.outfit !== 'none') outfit(C, Rg, fam, look.outfit, L);
-    if (look.hat && look.hat !== 'none') hat(C, L, Rg, fam, look.hat, pal);
+    const brawl = fkey.startsWith('brawl');                                 // no hats or costume details inside the dust
+    if (look.outfit && look.outfit !== 'none' && !brawl) outfit(C, Rg, fam, look.outfit, L);
+    if (look.hat && look.hat !== 'none' && !brawl) hat(C, L, Rg, fam, look.hat, pal);
     // outline: dark, tinted by the colour it borders
     const out = copy(C), at = (x, y) => (C[y] && C[y][x]) || null;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -526,7 +570,8 @@
       case 'stand': case 'eat': return { f: 'walk:1', rot: 0, eyes };
       case 'scratch': return { f: 'scratch:' + (Math.floor(t * 7) % 2), rot: 0, eyes };
       case 'groom': return { f: 'groom:' + (Math.floor(t * 3) % 4), rot: 0, eyes: 'closed' };
-      case 'sit': case 'purr': case 'swat': case 'grumpy': return { f: 'sit:' + sitK, rot: 0, eyes: 'open' };
+      case 'swat': return { f: 'box:' + (Math.floor(t * 6) % 2), rot: 0, eyes };
+      case 'sit': case 'purr': case 'grumpy': return { f: 'sit:' + sitK, rot: 0, eyes: 'open' };
       case 'loaf': return { f: 'loaf:' + (Math.floor(t * 1.3) % 2), rot: 0, eyes: 'open' };
       case 'sleep': return { f: 'sleep:' + (Math.floor(t * 1.1) % 2), rot: 0, eyes: 'open' };
       case 'crouch': return { f: 'stalk:0', rot: 0, eyes: 'open' };
@@ -546,7 +591,7 @@
         const lean = Math.max(-7, Math.min(7, Math.round((ri.swing || 0) * 12)));
         return { f: 'hang:' + (Math.floor(t * 2.5) % 2), rot: 0, eyes: 'open', shear: ri.facing < 0 ? -lean : lean };
       }
-      case 'roll': return { f: 'sit:0', rot: q(ri.rotation), eyes: 'open' };
+      case 'roll': return { f: 'brawl:' + (Math.floor(t * 8) % 4), rot: 0, eyes: 'open' };
       default: return { f: 'sit:0', rot: 0, eyes };
     }
   }

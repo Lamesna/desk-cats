@@ -86,17 +86,6 @@ final class CatView: NSView {
         default: headTop = 46
         }
 
-        // fight cloud
-        if dust {
-            for i in 0..<7 {
-                let ang = CGFloat(i) / 7 * 2 * .pi + CGFloat(now) * 2.5
-                let rr = (13 + 4 * sin(CGFloat(now) * 9 + CGFloat(i))) * s
-                let c = CGPoint(x: anchor.x + cos(ang) * 22 * s, y: anchor.y + (15 + sin(ang) * 13) * s)
-                NSColor(white: 0.82, alpha: 0.5).setFill()
-                NSBezierPath(ovalIn: CGRect(x: c.x - rr / 2, y: c.y - rr / 2, width: rr, height: rr)).fill()
-            }
-        }
-
         // zzz
         if sleeping {
             for i in 0..<3 {

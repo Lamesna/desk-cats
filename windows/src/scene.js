@@ -80,15 +80,6 @@
     const headTop = ['sleep', 'loaf', 'crouch', 'eat'].includes(ri.pose) ? 30 : ri.pose === 'climb' ? 52 : ri.pose === 'dangle' ? 58 : 46;
     const up = (dy) => sy - dy * s;                            // a point `dy` cat pixels above the feet
 
-    // fight cloud
-    if (c.state === 'social' && c.socialPose === 'roll') {
-      for (let i = 0; i < 7; i++) {
-        const ang = i / 7 * 2 * PI + now * 2.5, rr = (13 + 4 * Math.sin(now * 9 + i)) * s;
-        ctx.fillStyle = 'rgba(209,209,209,0.5)';
-        ctx.beginPath(); ctx.arc(ax + Math.cos(ang) * 22 * s, up(15 + Math.sin(ang) * 13), rr / 2, 0, 2 * PI); ctx.fill();
-      }
-    }
-
     // zzz
     if (c.state === 'sleep') {
       for (let i = 0; i < 3; i++) {
