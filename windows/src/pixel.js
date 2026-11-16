@@ -103,6 +103,15 @@
       headAt(g, 14, hy, 12, 'e');
       const tip = by - 2 - (f % 2);                                     // the tail streams out behind
       Ln(g, 4, by, 1, tip, 't', 2); Ln(g, 1, tip, 0, tip - 2, 't', 2);
+    } else if (kind === 'stalk' || kind === 'wiggle') {
+      // hunting: low to the ground, head forward, tail straight back; the wiggle lifts the rump in turn
+      const st = k % 2;
+      [8 + st, 13 - st].forEach((x) => R(g, x, 16, x + 1, 19, 'd'));
+      E(g, 11, 15, 7.6, 2.8, 'b'); E(g, 11, 16.6, 5, 1, 'v');
+      if (kind === 'wiggle') E(g, 5, 13 - st, 3, 2.4, 'b');
+      [5 - st, 16 + st].forEach((x) => { R(g, x, 16, x + 1, 19, 'b'); S(g, x, 19, 'u'); S(g, x + 1, 19, 'u'); });
+      headAt(g, 14, 7, 12, 'e');
+      Ln(g, 4, 14, 0, 13 - st, 't', 2);
     } else if (kind === 'sleep' || kind === 'loaf') {
       const b = k % 2, open = kind === 'loaf';
       E(g, 12, 16 - b * 0.5, 9.4, 3.6 + b * 0.5, 'b'); E(g, 12, 18, 7, 1.5, 'v');
@@ -142,14 +151,31 @@
     return g;
   }
 
+  // Held up: arms false is a cat picked up by the scruff (legs and tail dangling), true is a cat hanging
+  // from the laser dot with both front paws stretched up over its head.
+  function hangBase(k, arms) {
+    const g = mk(20, 37), off = arms ? 4 : 0, sw = k % 2, head = frontBase();
+    E(g, 8, 18 + off, 3.6, 5.5, 'b'); E(g, 8, 18.5 + off, 1.8, 4, 'v');
+    if (arms) { Ln(g, 4, 14 + off, 5, 1, 'b', 2); Ln(g, 11, 14 + off, 10, 1, 'b', 2); R(g, 5, 0, 6, 1, 'u'); R(g, 9, 0, 10, 1, 'u'); }
+    else { Ln(g, 4, 14, 4 - sw, 20, 'b', 2); Ln(g, 11, 14, 12 + sw, 20, 'b', 2); R(g, 4 - sw, 21, 5 - sw, 21, 'u'); R(g, 12 + sw, 21, 13 + sw, 21, 'u'); }
+    Ln(g, 5, 22 + off, 5 + sw, 27 + off, 'b', 2); Ln(g, 10, 22 + off, 10 - sw, 27 + off, 'b', 2);
+    R(g, 5 + sw, 28 + off, 6 + sw, 28 + off, 'u'); R(g, 10 - sw, 28 + off, 11 - sw, 28 + off, 'u');
+    Ln(g, 8, 23 + off, 7 + 2 * sw, 30 + off, 't', 2);
+    for (let y = 0; y <= 12; y++) for (let x = 0; x < 20; x++) if (head[y][x]) g[y + off][x] = head[y][x];
+    return g;
+  }
+
   // families: a letter grid, padded for tall hats, with the point on the ground and the leg row
   const FAM = {};
   function pad(g) { const o = mk(g[0].length + PAD_SIDE * 2, g.length + PAD_TOP); g.forEach((r, y) => r.forEach((c, x) => { o[y + PAD_TOP][x + PAD_SIDE] = c; })); return o; }
   function family(key) {
     if (FAM[key]) return FAM[key];
     const [kind, k] = key.split(':'), n = +k || 0;
-    let L, ground, legTop, wallX = null;
-    if (kind === 'groom') {
+    let L, ground, legTop, wallX = null, top = null;
+    if (kind === 'dangle' || kind === 'hang') {
+      const arms = kind === 'hang';
+      L = hangBase(n, arms); ground = (arms ? 34 : 30) + PAD_TOP; legTop = (arms ? 26 : 22) + PAD_TOP; if (arms) top = PAD_TOP;
+    } else if (kind === 'groom') {
       // washing: eyes shut, one front paw comes up to lick it (with the tongue out), then rubs the cheek and over the eye
       L = frontBase();
       for (const r of L) r.forEach((c, x) => { if (c === 'e') r[x] = 'k'; });
@@ -172,7 +198,7 @@
     else { L = sideBase(kind, n); ground = 19 + PAD_TOP; legTop = kind === 'run' ? 14 + PAD_TOP : 999; }
     L = pad(L);
     const Rg = L.map((row) => row.map((c) => ({ h: 'H', f: 'H', r: 'H', t: 'T', b: 'B', d: 'B', v: 'V', u: 'U' })[c] || c));
-    return (FAM[key] = { L, R: Rg, ground, legTop, side: kind !== 'sit', cx: Math.floor(L[0].length / 2), wallX, lying: kind === 'sleep' || kind === 'loaf' });
+    return (FAM[key] = { L, R: Rg, ground, legTop, side: !['sit', 'dangle', 'hang', 'groom'].includes(kind), cx: Math.floor(L[0].length / 2), wallX, lying: kind === 'sleep' || kind === 'loaf', top });
   }
 
   // ---------- palette and coat patterns ----------
@@ -439,11 +465,19 @@
   }
 
   const cache = new Map();
-  function sprite(look, fkey, rot, eyes) {
-    const sig = [look.baseHex, look.accentHex, look.pattern, look.seed, look.eyeL, look.eyeR, look.hat, look.outfit, fkey, rot, eyes].join('|');
+  function sprite(look, fkey, rot, eyes, shear) {
+    shear = shear || 0;
+    const sig = [look.baseHex, look.accentHex, look.pattern, look.seed, look.eyeL, look.eyeR, look.hat, look.outfit, fkey, rot, eyes, shear].join('|');
     let s = cache.get(sig); if (s) return s;
     if (cache.size > 600) cache.clear();
-    const { C, fam } = build(fkey, look, eyes), g = rotate(C, rot);
+    const { C, fam } = build(fkey, look, eyes);
+    let CS = C;
+    if (shear && fam.top !== null) {
+      // swinging on the laser dot: rows lean further the lower they hang, in whole pixels
+      const H0 = C.length, W0 = C[0].length; CS = mk(W0, H0);
+      for (let y = 0; y < H0; y++) { const dx = Math.round(shear * (y - fam.top) / Math.max(1, H0 - fam.top)); for (let x = 0; x < W0; x++) if (C[y][x] && x + dx >= 0 && x + dx < W0) CS[y][x + dx] = C[y][x]; }
+    }
+    const g = rotate(CS, rot);
     const H = g.length, W = g[0].length, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     const cx = cv.getContext('2d'), id = cx.createImageData(W, H);
     let bx0 = W, bx1 = -1, by0 = H, by1 = -1;
@@ -451,7 +485,7 @@
     cx.putImageData(id, 0, 0);
     // anchor: the middle of the feet for upright cats, the bounding box for turned ones
     const ax = rot === 0 ? (fam.wallX !== null ? fam.wallX : fam.cx) : (bx0 + bx1 + 1) / 2, ay = rot === 0 ? fam.ground + (fam.wallX !== null ? 1 : 2) : by1 + 1;   // climbers hang on the wall line
-    s = { cv, ax, ay, W, H, bx0, bx1, by0, by1 }; cache.set(sig, s); return s;
+    s = { cv, ax, ay, W, H, bx0, bx1, by0, by1, top: fam.top }; cache.set(sig, s); return s;
   }
 
   // ---------- which sprite for which pose ----------
@@ -470,7 +504,9 @@
       case 'sit': case 'purr': case 'swat': case 'grumpy': return { f: 'sit:' + sitK, rot: 0, eyes: 'open' };
       case 'loaf': return { f: 'loaf:' + (Math.floor(t * 1.3) % 2), rot: 0, eyes: 'open' };
       case 'sleep': return { f: 'sleep:' + (Math.floor(t * 1.1) % 2), rot: 0, eyes: 'open' };
-      case 'crouch': case 'stalk': case 'wiggle': return { f: 'loaf:' + (Math.floor(t * 2) % 2), rot: 0, eyes: 'open', shake: ri.pose === 'wiggle' ? Math.sin(t * 30) : 0 };
+      case 'crouch': return { f: 'stalk:0', rot: 0, eyes: 'open' };
+      case 'stalk': return { f: 'stalk:' + (walkK % 2), rot: 0, eyes: 'open' };
+      case 'wiggle': return { f: 'wiggle:' + (Math.floor(t * 8) % 2), rot: 0, eyes: 'open' };
       case 'jump': return { f: 'jump:' + (ri.progress < 0.5 ? 0 : 1), rot: 0, eyes };
       case 'fall': return { f: 'jump:1', rot: q(ri.rotation), eyes: 'open' };
       case 'hiss': return { f: 'hiss:' + (Math.floor(t * 8) % 2), rot: 0, eyes: 'open', shake: Math.sin(t * 40) };
@@ -479,8 +515,12 @@
       case 'slide': return { f: 'slide:0', rot: 0, eyes: 'open', flip: ri.climbSide > 0, wall: true };
       case 'wallScratch': return { f: 'climb:' + (Math.floor(t * 6) % 2 ? 0 : 2), rot: 0, eyes };
       case 'traverse': return { f: 'walk:' + walkK, rot: 2, eyes };
-      case 'hangSide': return { f: 'sit:0', rot: 0, eyes: 'open' };
-      case 'hangBack': case 'dangle': return { f: 'sit:0', rot: 0, eyes: 'open' };
+      case 'dangle': return { f: 'dangle:' + (Math.floor(t * 2.5) % 2), rot: 0, eyes: 'open' };
+      case 'hangSide': case 'hangBack': {
+        // the body follows the swing; a mirrored sprite leans the other way
+        const lean = Math.max(-7, Math.min(7, Math.round((ri.swing || 0) * 12)));
+        return { f: 'hang:' + (Math.floor(t * 2.5) % 2), rot: 0, eyes: 'open', shear: ri.facing < 0 ? -lean : lean };
+      }
       case 'roll': return { f: 'sit:0', rot: q(ri.rotation), eyes: 'open' };
       default: return { f: 'sit:0', rot: 0, eyes };
     }
@@ -489,14 +529,16 @@
   const cell = (scale) => Math.max(2, Math.round(1.9 * scale));
 
   function drawCat(ctx, c, ri, H, now) {
-    const p = pick(ri, now, c), s = sprite(c.look, p.f, p.rot, p.eyes), cs = cell(c.scale);
+    const p = pick(ri, now, c), s = sprite(c.look, p.f, p.rot, p.eyes, p.shear), cs = cell(c.scale);
     const flip = p.wall ? (p.flip ? -1 : 1) : (ri.facing < 0 ? -1 : 1) * (p.flip ? -1 : 1);
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     ctx.translate(Math.round(c.x + (p.shake || 0) * cs * 0.5), Math.round(H - c.y));
     ctx.scale(flip, 1);
     if (ri.pose === 'jump' || ri.pose === 'fall' || ri.pose === 'dangle') ctx.translate(0, 0);
-    ctx.drawImage(s.cv, -Math.round(s.ax * cs), -Math.round(s.ay * cs), s.W * cs, s.H * cs);
+    // a cat hanging from the laser dot holds it with its paws: the dot is 56 points above its feet
+    const topY = s.top !== null && s.top !== undefined ? -Math.round(56 * c.scale + s.top * cs) : -Math.round(s.ay * cs);
+    ctx.drawImage(s.cv, -Math.round(s.ax * cs), topY, s.W * cs, s.H * cs);
     ctx.restore();
   }
 

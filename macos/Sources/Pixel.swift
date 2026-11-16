@@ -165,6 +165,15 @@ enum PixelCats {
             // the tail streams out behind
             let tip = by - 2 - (f % 2)
             s.line(4, by, 1, tip, "t", 2); s.line(1, tip, 0, tip - 2, "t", 2)
+        } else if kind == "stalk" || kind == "wiggle" {
+            // hunting: low to the ground, head forward, tail straight back; the wiggle lifts the rump in turn
+            let st = k % 2
+            for x in [8 + st, 13 - st] { s.rect(x, 16, x + 1, 19, "d") }
+            s.ell(11, 15, 7.6, 2.8, "b"); s.ell(11, 16.6, 5, 1, "v")
+            if kind == "wiggle" { s.ell(5, 13 - Double(st), 3, 2.4, "b") }
+            for x in [5 - st, 16 + st] { s.rect(x, 16, x + 1, 19, "b"); s[x, 19] = "u"; s[x + 1, 19] = "u" }
+            headAt(&s, 14, 7, 12, "e")
+            s.line(4, 14, 0, 13 - st, "t", 2)
         } else if kind == "sleep" || kind == "loaf" {
             let b = Double(k % 2), open = kind == "loaf"
             s.ell(12, 16 - b * 0.5, 9.4, 3.6 + b * 0.5, "b"); s.ell(12, 18, 7, 1.5, "v")
@@ -211,14 +220,40 @@ enum PixelCats {
         return s.g
     }
 
-    private struct Family { let L: LGrid; let R: LGrid; let ground: Int; let legTop: Int; let side: Bool; let cx: Int; var wallX: Int? = nil; var lying = false }
+    /// Held up: `arms` false is a cat picked up by the scruff (legs and tail dangling), true is a cat hanging
+    /// from the laser dot with both front paws stretched up over its head.
+    private static func hangBase(_ k: Int, arms: Bool) -> LGrid {
+        var s = Sheet(20, 37)
+        let off = arms ? 4 : 0, sw = k % 2, head = frontBase()
+        s.ell(8, 18 + Double(off), 3.6, 5.5, "b"); s.ell(8, 18.5 + Double(off), 1.8, 4, "v")
+        if arms {
+            s.line(4, 14 + off, 5, 1, "b", 2); s.line(11, 14 + off, 10, 1, "b", 2)
+            s.rect(5, 0, 6, 1, "u"); s.rect(9, 0, 10, 1, "u")
+        } else {
+            s.line(4, 14, 4 - sw, 20, "b", 2); s.line(11, 14, 12 + sw, 20, "b", 2)
+            s.rect(4 - sw, 21, 5 - sw, 21, "u"); s.rect(12 + sw, 21, 13 + sw, 21, "u")
+        }
+        s.line(5, 22 + off, 5 + sw, 27 + off, "b", 2); s.line(10, 22 + off, 10 - sw, 27 + off, "b", 2)
+        s.rect(5 + sw, 28 + off, 6 + sw, 28 + off, "u"); s.rect(10 - sw, 28 + off, 11 - sw, 28 + off, "u")
+        s.line(8, 23 + off, 7 + 2 * sw, 30 + off, "t", 2)
+        for y in 0...12 { for x in 0..<20 where head[y][x] != nil { s[x, y + off] = head[y][x] } }
+        return s.g
+    }
+
+    private struct Family { let L: LGrid; let R: LGrid; let ground: Int; let legTop: Int; let side: Bool; let cx: Int; var wallX: Int? = nil; var lying = false; var top: Int? = nil }
     private static var families: [String: Family] = [:]
 
     private static func family(_ key: String) -> Family {
         if let f = families[key] { return f }
         let parts = key.split(separator: ":"), kind = String(parts[0]), n = Int(parts.count > 1 ? parts[1] : "0") ?? 0
         var L: LGrid, ground: Int, legTop: Int, wallX: Int? = nil
-        if kind == "groom" {
+        var top: Int? = nil
+        if kind == "dangle" || kind == "hang" {
+            let arms = kind == "hang"
+            L = hangBase(n, arms: arms)
+            ground = (arms ? 34 : 30) + padTop; legTop = (arms ? 26 : 22) + padTop
+            if arms { top = padTop }
+        } else if kind == "groom" {
             // washing: eyes shut, one front paw comes up to lick it (with the tongue out), then rubs the cheek and over the eye
             L = frontBase()
             for y in L.indices { for x in L[y].indices where L[y][x] == "e" { L[y][x] = "k" } }
@@ -247,7 +282,7 @@ enum PixelCats {
         for y in L.indices { for x in L[y].indices { P[y + padTop][x + padSide] = L[y][x] } }
         let map: [Character: Character] = ["h": "H", "f": "H", "r": "H", "t": "T", "b": "B", "d": "B", "v": "V", "u": "U"]
         let R: LGrid = P.map { $0.map { c in c.map { map[$0] ?? $0 } } }
-        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit", cx: P[0].count / 2, wallX: wallX, lying: kind == "sleep" || kind == "loaf")
+        let f = Family(L: P, R: R, ground: ground, legTop: legTop, side: kind != "sit" && kind != "dangle" && kind != "hang" && kind != "groom", cx: P[0].count / 2, wallX: wallX, lying: kind == "sleep" || kind == "loaf", top: top)
         families[key] = f
         return f
     }
@@ -633,15 +668,26 @@ enum PixelCats {
         return o
     }
 
-    struct Sprite { let img: CGImage; let ax: CGFloat; let ay: CGFloat; let w: Int; let h: Int; let box: CGRect }
+    struct Sprite { let img: CGImage; let ax: CGFloat; let ay: CGFloat; let w: Int; let h: Int; let box: CGRect; var top: CGFloat? = nil }
     private static var cache: [String: Sprite] = [:]
 
-    static func sprite(_ look: CatLook, _ fkey: String, rot: Int, eyesOpen: Bool) -> Sprite? {
-        let sig = "\(look.baseHex)|\(look.accentHex)|\(look.pattern)|\(look.seed)|\(look.eyeHexL)|\(look.eyeHexR)|\(look.hat)|\(look.outfit)|\(fkey)|\(rot)|\(eyesOpen)"
+    static func sprite(_ look: CatLook, _ fkey: String, rot: Int, eyesOpen: Bool, shear: Int = 0) -> Sprite? {
+        let sig = "\(look.baseHex)|\(look.accentHex)|\(look.pattern)|\(look.seed)|\(look.eyeHexL)|\(look.eyeHexR)|\(look.hat)|\(look.outfit)|\(fkey)|\(rot)|\(eyesOpen)|\(shear)"
         if let s = cache[sig] { return s }
         if cache.count > 600 { cache.removeAll() }
         let (C, fam) = build(fkey, look, eyesOpen)
-        let g = rotate(C, rot), H = g.count, W = g[0].count
+        var CS = C
+        if shear != 0, let top = fam.top {
+            // swinging on the laser dot: rows lean further the lower they hang, in whole pixels
+            let H0 = C.count, W0 = C[0].count
+            var n: CGrid = blank(W0, H0)
+            for y in 0..<H0 {
+                let dx = Int((Double(shear) * Double(y - top) / Double(max(1, H0 - top))).rounded())
+                for x in 0..<W0 { if let p = C[y][x], x + dx >= 0, x + dx < W0 { n[y][x + dx] = p } }
+            }
+            CS = n
+        }
+        let g = rotate(CS, rot), H = g.count, W = g[0].count
         var data = [UInt8](repeating: 0, count: W * H * 4)
         var bx0 = W, bx1 = -1, by0 = H, by1 = -1
         for y in 0..<H {
@@ -660,14 +706,14 @@ enum PixelCats {
         // climbers hang on the wall line, by the hind paws
         let ax = rot == 0 ? CGFloat(fam.wallX ?? fam.cx) : CGFloat(bx0 + bx1 + 1) / 2
         let ay = rot == 0 ? CGFloat(fam.ground + (fam.wallX == nil ? 2 : 1)) : CGFloat(by1 + 1)
-        let s = Sprite(img: img, ax: ax, ay: ay, w: W, h: H, box: CGRect(x: bx0, y: by0, width: bx1 - bx0 + 1, height: by1 - by0 + 1))
+        let s = Sprite(img: img, ax: ax, ay: ay, w: W, h: H, box: CGRect(x: bx0, y: by0, width: bx1 - bx0 + 1, height: by1 - by0 + 1), top: fam.top.map { CGFloat($0) })
         cache[sig] = s
         return s
     }
 
     // MARK: which sprite for which pose
 
-    struct Pick { var f: String; var rot = 0; var eyesOpen = true; var flip = false; var shake: CGFloat = 0; var wall = false }
+    struct Pick { var f: String; var rot = 0; var eyesOpen = true; var flip = false; var shake: CGFloat = 0; var wall = false; var shear = 0 }
 
     static func pick(_ ri: RenderInfo) -> Pick {
         func q(_ a: CGFloat) -> Int { Int((a / (.pi / 2)).rounded()) }
@@ -688,8 +734,9 @@ enum PixelCats {
             return Pick(f: "sit:\(sitK)", eyesOpen: true)
         case .loaf: return Pick(f: "loaf:\(Int(t * 1.3) % 2)")
         case .sleep: return Pick(f: "sleep:\(Int(t * 1.1) % 2)")
-        case .crouch, .stalk, .wiggle:
-            return Pick(f: "loaf:\(Int(t * 2) % 2)", shake: ri.pose == .wiggle ? CGFloat(sin(t * 30)) : 0)
+        case .crouch: return Pick(f: "stalk:0")
+        case .stalk: return Pick(f: "stalk:\(walkK % 2)")
+        case .wiggle: return Pick(f: "wiggle:\(Int(t * 8) % 2)")
         case .jump: return Pick(f: "jump:\(ri.progress < 0.5 ? 0 : 1)", eyesOpen: open)
         case .fall: return Pick(f: "jump:1", rot: q(ri.rotation))
         case .hiss: return Pick(f: "hiss:\(Int(t * 8) % 2)", shake: CGFloat(sin(t * 40)))
@@ -698,7 +745,11 @@ enum PixelCats {
         case .slide: return Pick(f: "slide:0", flip: ri.climbSide > 0, wall: true)
         case .wallScratch: return Pick(f: "climb:\(paw)", eyesOpen: open)
         case .traverse: return Pick(f: "walk:\(walkK)", rot: 2, eyesOpen: open)
-        case .hangSide, .hangBack, .dangle: return Pick(f: "sit:0")
+        case .dangle: return Pick(f: "dangle:\(Int(t * 2.5) % 2)")
+        case .hangSide, .hangBack:
+            // the body follows the swing; a mirrored sprite leans the other way
+            let lean = max(-7, min(7, Int((ri.swing * 12).rounded())))
+            return Pick(f: "hang:\(Int(t * 2.5) % 2)", shear: ri.facing < 0 ? -lean : lean)
         case .roll: return Pick(f: "sit:0", rot: q(ri.rotation))
         }
     }
@@ -708,7 +759,7 @@ enum PixelCats {
     /// Draws a cat with its feet at `at` in a y-up context.
     static func draw(_ ctx: CGContext, look: CatLook, ri: RenderInfo, scale: CGFloat, at: CGPoint) {
         let p = pick(ri)
-        guard let s = sprite(look, p.f, rot: p.rot, eyesOpen: p.eyesOpen) else { return }
+        guard let s = sprite(look, p.f, rot: p.rot, eyesOpen: p.eyesOpen, shear: p.shear) else { return }
         let cs = cell(scale)
         // on a wall only the wall side matters; elsewhere the cat looks where it goes
         let flip: CGFloat = p.wall ? (p.flip ? -1 : 1) : (ri.facing < 0 ? -1 : 1) * (p.flip ? -1 : 1)
@@ -717,7 +768,9 @@ enum PixelCats {
         ctx.setShouldAntialias(false)
         ctx.translateBy(x: (at.x + p.shake * cs * 0.5).rounded(), y: at.y.rounded())
         ctx.scaleBy(x: flip, y: 1)
-        ctx.draw(s.img, in: CGRect(x: -(s.ax * cs).rounded(), y: (s.ay * cs).rounded() - CGFloat(s.h) * cs,
+        // a cat hanging from the laser dot holds it with its paws: the dot is 56 points above its feet
+        let topY = s.top.map { 56 * scale + $0 * cs } ?? (s.ay * cs).rounded()
+        ctx.draw(s.img, in: CGRect(x: -(s.ax * cs).rounded(), y: topY.rounded() - CGFloat(s.h) * cs,
                                    width: CGFloat(s.w) * cs, height: CGFloat(s.h) * cs))
         ctx.restoreGState()
     }

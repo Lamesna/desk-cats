@@ -8,16 +8,17 @@ if (mode === 'coats') K.coatPresets.forEach((p) => poses.forEach((pose, i) => it
 if (mode === 'costumes') K.outfitOptions.filter((o) => o.id !== 'none').forEach((o) => ['sit', 'walk', 'sleep', 'jump'].forEach((pose) => items.push({ coat: 'grayWhite', outfit: o.id, pose, ph: 0.3 })));
 if (mode === 'moves') [['grayWhite','none','none'],['ginger','spider','c_spider'],['calico','dino','c_dino'],['black','none','cape']].forEach(([coat,hat,outfit]) => { [0,1,2,3].forEach((k) => items.push({ coat, hat, outfit, pose: 'climb', ph: k * Math.PI / 2 + 0.1, side: -1 })); items.push({ coat, hat, outfit, pose: 'slide', ph: 0, side: 1 }); items.push({ coat, hat, outfit, pose: 'climb', ph: 0.1, side: 1 }); items.push({ coat, hat, outfit, pose: 'sit', ph: 0 }); items.push({ coat, hat, outfit, pose: 'walk', ph: 0.3 }); });
 if (mode === 'run') [['grayWhite','none','none'],['ginger','none','c_dino'],['calico','spider','c_spider'],['black','witch','cape']].forEach(([coat,hat,outfit]) => [0,1,2,3].forEach((k) => items.push({ coat, hat, outfit, pose: 'run', ph: k * Math.PI / 2 + 0.1 })));
+if (mode === 'hold') [['grayWhite','none','none'],['ginger','c_dino','none'],['calico','wings','witch']].forEach(([coat,outfit,hat]) => { items.push({ coat, outfit, hat, pose: 'dangle', ph: 0 }); [-0.5, 0, 0.5].forEach((sw) => items.push({ coat, outfit, hat, pose: 'hangSide', ph: 0, swing: sw })); ['crouch', 'stalk', 'wiggle'].forEach((pose) => items.push({ coat, outfit, hat, pose, ph: 0.1 })); });
 if (mode === 'hats') { const coats = ['grayWhite', 'ginger', 'black', 'white', 'calico', 'siamese', 'brownTabby', 'blue']; K.hatOptions.filter((o) => o.id !== 'none').forEach((o, i) => { ['sit', 'walk'].forEach((pose) => items.push({ coat: coats[i % 8], hat: o.id, pose, ph: 0.3 })); }); }
-const cols = mode === 'coats' ? 9 : mode === 'run' ? 4 : 8, cw = 96, ch = 100;
+const cols = mode === 'coats' ? 9 : mode === 'run' ? 4 : mode === 'hold' ? 7 : 8, cw = 96, ch = mode === 'hold' ? 170 : 100;
 const rows = Math.ceil(items.length / cols), cv = document.getElementById('c'); cv.width = cols * cw; cv.height = rows * ch;
 const ctx = cv.getContext('2d'); ctx.fillStyle = '#bdbdbd'; ctx.fillRect(0, 0, cv.width, cv.height);
 items.forEach((it, i) => {
   const cfg = K.newCat('x', it.coat, K.preset(it.coat).eyes, 1); cfg.seed = 777; cfg.hat = it.hat || 'none'; cfg.outfit = it.outfit || 'none';
   const look = K.makeLook(cfg), pose = it.pose === 'walk2' ? 'walk' : it.pose;
-  const ri = { pose, facing: 1, phase: it.ph, t: 1, eyes: 'open', look: {x:0,y:0}, climbSide: it.side || -1, rotation: 0, progress: 0.3 };
+  const ri = { pose, facing: 1, phase: it.ph, t: 1, eyes: 'open', look: {x:0,y:0}, climbSide: it.side || -1, swing: it.swing || 0, rotation: 0, progress: 0.3 };
   const c = { look, scale: 1.3, x: (i % cols) * cw + cw / 2, y: 100 - 12 };
-  const H = 100; ctx.save(); ctx.translate(0, Math.floor(i / cols) * ch); K.pixel.drawCat(ctx, c, ri, H, 1.0); ctx.restore();
+  const H = ch; c.y = mode === 'hold' ? 20 : c.y; ctx.save(); ctx.translate(0, Math.floor(i / cols) * ch); K.pixel.drawCat(ctx, c, ri, H, 1.0); ctx.restore();
 });
 window.__ready = true;
 </script></body></html>
