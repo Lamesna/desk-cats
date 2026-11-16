@@ -2,7 +2,7 @@
 
 The Windows version of Kotiki, a separate port of the macOS app built with Electron. See the [main README](../README.md) for what the cats do. Requires Windows 10 or 11, 64-bit.
 
-Download `Kotiki-0.1.0-Windows-x64.zip` from the [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.1.0), unzip it and run `Kotiki.exe`.
+Download `Kotiki-0.2.0-Windows-x64.zip` from the [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.2.0), unzip it and run `Kotiki.exe`.
 
 ## Pixel cats
 

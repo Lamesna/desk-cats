@@ -15,7 +15,7 @@ Clicks pass straight through the cats, so you keep working as usual. You can fee
 | Platform | Folder | Status | Download |
 |---|---|---|---|
 | **macOS** 13+ (Apple Silicon and Intel) | [`macos/`](macos) | Stable, version 1.4 | [Latest release](https://github.com/MiLana-ec/desk-cats/releases/latest), file `Kotiki-1.4-macOS.zip` |
-| **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.1.0 | [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.1.0), file `Kotiki-0.1.0-Windows-x64.zip` |
+| **Windows** 10 / 11 (64-bit) | [`windows/`](windows) | Beta, version 0.2.0 | [Windows release](https://github.com/MiLana-ec/desk-cats/releases/tag/windows-v0.2.0), file `Kotiki-0.2.0-Windows-x64.zip` |
 
 The macOS app is native Swift. The Windows app is a separate port built with Electron. Both draw the same cats and share the same look, costumes and behavior, but the code is independent.
 
@@ -29,7 +29,7 @@ Details and build instructions: [`macos/README.md`](macos/README.md).
 
 ### Windows (beta)
 
-1. Download `Kotiki-0.1.0-Windows-x64.zip` from the Windows release and unzip it anywhere.
+1. Download `Kotiki-0.2.0-Windows-x64.zip` from the Windows release and unzip it anywhere.
 2. Double-click `Kotiki.exe`. If Windows shows "Windows protected your PC", click "More info", then "Run anyway" (the app is not signed).
 3. The cat icon sits in the notification area at the right of the taskbar (click the ^ arrow if it is hidden). Hold Ctrl and drag to pick up a cat.
 
